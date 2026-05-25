@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# env files（含 API keys，絕對不進 git）
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+dev-server.log
+dev-server.log.err
+
+# OS
+.DS_Store
+Thumbs.db
