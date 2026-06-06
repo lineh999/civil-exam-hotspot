@@ -893,35 +893,57 @@ function parseQuestionNumberLabel(value: string) {
   return digits[value] ?? null;
 }
 
-function extractKokugoEssayStem(text: string) {
+type KokugoWrittenPart = {
+  label: string;
+  questionType: "作文" | "公文";
+  stem: string;
+};
+
+function extractKokugoWrittenParts(text: string): KokugoWrittenPart[] {
   const normalized = normalizeMoexQuestionText(text);
-  const startMatch = normalized.match(
-    /(?:^|\n)\s*(?:甲|一)[、.]\s*(?:作文(?:部分)?|作文題)[^：:\n]*[：:]?(?:\s*[（(]\s*\d+\s*分\s*[）)])?/,
-  );
-
-  if (!startMatch || startMatch.index === undefined) {
-    return "";
-  }
-
-  const start = startMatch.index + startMatch[0].length;
-  const remaining = normalized.slice(start);
-  const endMatch = remaining.match(
+  const choiceSectionMatch = normalized.match(
     /(?:^|\n)\s*(?:乙|二)[、.]\s*(?:測驗(?:題|部分)?|選擇題)(?:部分)?/,
   );
-  let essay = remaining.slice(0, endMatch?.index ?? remaining.length);
+  const writtenSection = normalized.slice(0, choiceSectionMatch?.index ?? normalized.length);
+  const partMatches = Array.from(
+    writtenSection.matchAll(
+      /(?:^|\n)\s*([甲乙一二三四])[、.]\s*(作文|公文)(?:部分|題)?\s*[：:]?\s*(?:[（(]\s*\d+\s*分\s*[）)])?/g,
+    ),
+  );
 
-  essay = essay
-    .replace(
-      /^[\s\S]*?(?:不|不)得於試卷上書寫姓名或座號[。．]?\s*/u,
-      "",
-    )
-    .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "\n")
-    .replace(/(?:^|\n)\s*代號：?[^\n]*\n\s*頁次：?[^\n]*/g, "\n")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return partMatches.flatMap((match, index) => {
+    const questionType = match[2] as KokugoWrittenPart["questionType"];
+    const start = (match.index ?? 0) + match[0].length;
+    const end = index + 1 < partMatches.length
+      ? partMatches[index + 1].index ?? writtenSection.length
+      : writtenSection.length;
+    const body = writtenSection
+      .slice(start, end)
+      .replace(
+        /^[\s\S]*?(?:不|不)得於試卷上書寫姓名或座號[。．]?\s*/u,
+        "",
+      )
+      .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "\n")
+      .replace(/(?:^|\n)\s*代號：?[^\n]*\n\s*頁次：?[^\n]*/g, "\n")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
-  return essay.length >= 40 ? essay : "";
+    if (body.length < 20) {
+      return [];
+    }
+
+    return [{
+      label: match[1],
+      questionType,
+      stem: `${questionType}${match[0].match(/[（(]\s*\d+\s*分\s*[）)]/)?.[0] ?? ""}\n${body}`.trim(),
+    }];
+  });
+}
+
+function findKokugoWrittenPartPageNumber(pages: PdfTextPage[], questionType: KokugoWrittenPart["questionType"]) {
+  const pattern = new RegExp(`(?:^|\\n)\\s*(?:甲|乙|一|二|三|四)[、.]\\s*${questionType}(?:部分|題)?\\s*[：:]?`);
+  return pages.find((page) => pattern.test(normalizeMoexQuestionText(page.text)))?.num;
 }
 
 function parseMoexQuestionPdf(
@@ -941,20 +963,20 @@ function parseMoexQuestionPdf(
   const seenNumbers = new Set<number>();
 
   if (subject === "國文") {
-    const essayStem = extractKokugoEssayStem(text);
+    const writtenParts = extractKokugoWrittenParts(text);
 
-    if (essayStem) {
+    for (const part of writtenParts) {
       questions.push({
-        id: `${paperId}-pdf-essay-kokugo`,
+        id: `${paperId}-pdf-written-${part.questionType}`,
         year,
         subject,
         sourceCategory,
         paperTitle,
         paperUrl,
-        pageNumber: findQuestionPageNumber(pages, "甲", "kokugo"),
-        questionNo: "甲",
-        questionType: "作文",
-        stem: essayStem,
+        pageNumber: findKokugoWrittenPartPageNumber(pages, part.questionType),
+        questionNo: part.questionType,
+        questionType: part.questionType,
+        stem: part.stem,
         options: null,
         answer: null,
       });
@@ -1005,7 +1027,7 @@ function parseMoexQuestionPdf(
     .split(/(?:^|\n)\s*(?:乙|二)[、.]\s*測驗題/)[0]
     .split(/(?:^|\n)\s*(?:甲|一)[、.]\s*申論題[^：:]*[：:]?/).at(-1) ?? "";
   const essayMatches = Array.from(essayPart.matchAll(/(?:^|\n)\s*([一二三四五六七八九十]{1,3})[、.]\s*/g));
-  const essayQuestions = essayMatches.flatMap((match, index) => {
+  const essayQuestions = subject === "國文" ? [] : essayMatches.flatMap((match, index) => {
     const questionNumber = parseQuestionNumberLabel(match[1]);
 
     if (!questionNumber) {
@@ -1097,7 +1119,11 @@ function preferMoexParsedQuestions(current: LoadedQuestion[], parsed: LoadedQues
   const officialWrittenQuestions = parsed.filter(
     (question) =>
       !question.options
-      && (question.questionType.includes("作文") || question.questionType.includes("申論"))
+      && (
+        question.questionType.includes("作文")
+        || question.questionType.includes("公文")
+        || question.questionType.includes("申論")
+      )
       && isUsableQuestionStem(question.stem),
   );
 
@@ -1114,6 +1140,10 @@ function preferMoexParsedQuestions(current: LoadedQuestion[], parsed: LoadedQues
         || (
           question.questionType.includes("作文")
           && officialQuestion.questionType.includes("作文")
+        )
+        || (
+          question.questionType.includes("公文")
+          && officialQuestion.questionType.includes("公文")
         ),
     );
 

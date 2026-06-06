@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getCategoriesForExam, getExamOptions, getGroupedSubjects, getSubjectCatalogItem } from "@/lib/exam-subjects";
 import type { HotspotAnalysis, HotspotTopic } from "@/lib/openai-analyzer";
 
@@ -605,6 +605,7 @@ export default function HomePage() {
   const [essayYears, setEssayYears] = useState<string[]>(["114"]);
   const [essayIndex, setEssayIndex] = useState(0);
   const [essayRecords, setEssayRecords] = useState<Record<string, EssayRecord>>({});
+  const loadRequestIdRef = useRef(0);
 
   const categories = useMemo(() => getCategoriesForExam(selectedExam), [selectedExam]);
   const effectiveCategory = categories.includes(category) ? category : categories[0] ?? "";
@@ -900,13 +901,28 @@ export default function HomePage() {
   }
 
   function resetAnalysis() {
+    loadRequestIdRef.current += 1;
     setAnalysisStarted(false);
+    setIsLoadingPapers(false);
     setLoadedPapers([]);
     setLoadedQuestions([]);
     setLoadProgress(null);
     setLoadError("");
+    setDrawerMode(null);
     setAnalysisResults({});
     setAnalysisError({});
+    setAnalyzingSubject(null);
+    setQuizIndex(0);
+    setEssayIndex(0);
+  }
+
+  function changeFeature(nextFeature: FeatureTab) {
+    if (nextFeature === activeFeature) {
+      return;
+    }
+
+    resetAnalysis();
+    setActiveFeature(nextFeature);
   }
 
   function changeExam(nextExam: string) {
@@ -1043,6 +1059,8 @@ export default function HomePage() {
       return;
     }
 
+    const requestId = loadRequestIdRef.current + 1;
+    loadRequestIdRef.current = requestId;
     setSubjectName(targetSubjects[0] ?? "");
     setIsLoadingPapers(true);
     setLoadProgress({
@@ -1056,6 +1074,10 @@ export default function HomePage() {
     const progressTimer = window.setInterval(() => {
       progressTick += 1;
       setLoadProgress((current) => {
+        if (loadRequestIdRef.current !== requestId) {
+          return current;
+        }
+
         const percent = current?.percent ?? 8;
         const nextPercent = Math.min(88, percent + (progressTick < 5 ? 7 : 3));
         const label = activeFeature === "hotspots"
@@ -1095,6 +1117,10 @@ export default function HomePage() {
         throw new Error(data.error ?? "TwinkleAI MCP 載入失敗");
       }
 
+      if (loadRequestIdRef.current !== requestId) {
+        return;
+      }
+
       setLoadedPapers(data.papers ?? []);
       setLoadedQuestions(data.questions ?? []);
       setLoadProgress({
@@ -1104,6 +1130,10 @@ export default function HomePage() {
       });
       setAnalysisStarted(true);
     } catch (error) {
+      if (loadRequestIdRef.current !== requestId) {
+        return;
+      }
+
       setLoadedPapers(fallbackPapers);
       setLoadedQuestions(fallbackQuestions);
       setLoadProgress({
@@ -1115,7 +1145,9 @@ export default function HomePage() {
       setAnalysisStarted(true);
     } finally {
       window.clearInterval(progressTimer);
-      setIsLoadingPapers(false);
+      if (loadRequestIdRef.current === requestId) {
+        setIsLoadingPapers(false);
+      }
     }
   }
 
@@ -1146,7 +1178,7 @@ export default function HomePage() {
                     ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
                     : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
                 }`}
-                onClick={() => setActiveFeature(tab.id)}
+                onClick={() => changeFeature(tab.id)}
                 type="button"
               >
                 {tab.label}
