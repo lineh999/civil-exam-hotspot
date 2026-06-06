@@ -22,6 +22,8 @@ RUN addgroup --system --gid 1001 nodejs \
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# pdfjs 以動態 require 載入 Canvas，Next.js standalone 不會自動追蹤原生套件。
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@napi-rs ./node_modules/@napi-rs
 
 USER nextjs
 EXPOSE 3000
