@@ -108,6 +108,46 @@ const TAXONOMIES: Record<string, SubjectTaxonomy> = {
     questionPatterns: ["哲學家比較型", "理論辨析型", "實例應用型", "概念分析型"],
   },
 
+  英文: {
+    subject: "英文",
+    version: "v1.0",
+    topics: [
+      { id: "EN01", name: "閱讀測驗", subtopics: ["主旨推論", "細節理解", "詞義判斷", "文章結構", "推論與應用"] },
+      { id: "EN02", name: "詞彙與片語", subtopics: ["同義詞", "反義詞", "慣用語", "介系詞片語", "動詞片語"] },
+      { id: "EN03", name: "文法結構", subtopics: ["時態", "語態", "假設語氣", "關係子句", "分詞構句"] },
+      { id: "EN04", name: "克漏字", subtopics: ["語境判斷", "語法填空", "邏輯銜接"] },
+      { id: "EN05", name: "篇章理解", subtopics: ["段落主題", "轉折銜接", "文章邏輯順序"] },
+    ],
+    questionPatterns: ["詞彙測驗型", "閱讀測驗型", "克漏字型", "文法辨析型"],
+  },
+
+  憲法: {
+    subject: "憲法",
+    version: "v1.0",
+    topics: [
+      { id: "CO01", name: "憲法基本原則", subtopics: ["民主原則", "法治國原則", "共和原則", "基本國策"] },
+      { id: "CO02", name: "基本權利", subtopics: ["平等權", "自由權", "受益權", "參政權", "基本義務"] },
+      { id: "CO03", name: "政府組織", subtopics: ["總統", "行政院", "立法院", "司法院", "考試院", "監察院"] },
+      { id: "CO04", name: "地方制度", subtopics: ["直轄市", "縣市自治", "中央地方權限劃分"] },
+      { id: "CO05", name: "憲法增修條文", subtopics: ["選舉制度", "五院改革", "憲改程序"] },
+      { id: "CO06", name: "司法院大法官解釋", subtopics: ["基本權保障解釋", "機關爭議解釋", "違憲審查"] },
+    ],
+    questionPatterns: ["法條記憶型", "解釋字號型", "機關職權型", "基本權比較型"],
+  },
+
+  法學緒論: {
+    subject: "法學緒論",
+    version: "v1.0",
+    topics: [
+      { id: "LI01", name: "法律基本概念", subtopics: ["法律定義", "法律淵源", "法律效力", "法律解釋方法"] },
+      { id: "LI02", name: "公法概論", subtopics: ["行政法基礎", "憲法概要", "刑法概要"] },
+      { id: "LI03", name: "私法概論", subtopics: ["民法基礎", "契約法", "侵權行為", "物權概要"] },
+      { id: "LI04", name: "法律適用原則", subtopics: ["特別法優於普通法", "新法優於舊法", "法律不溯及既往"] },
+      { id: "LI05", name: "重要法律時事", subtopics: ["近年修法重點", "司法院解釋", "重要判決"] },
+    ],
+    questionPatterns: ["概念定義型", "法條比較型", "實例判斷型", "修法時事型"],
+  },
+
   資訊管理: {
     subject: "資訊管理",
     version: "v1.0",

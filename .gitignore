@@ -9,11 +9,15 @@ out/
 .env
 .env.local
 .env.*.local
+!.env.example
 
 # logs
 *.log
 dev-server.log
 dev-server.log.err
+
+# TypeScript incremental build
+*.tsbuildinfo
 
 # OS
 .DS_Store

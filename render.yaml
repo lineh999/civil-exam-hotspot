@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: civil-exam-platform
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TWINKLE_HUB_TOKEN
+        sync: false
+      - key: APP_VERSION
+        value: production

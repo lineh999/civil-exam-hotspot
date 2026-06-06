@@ -4586,7 +4586,7 @@ export const examSubjectCatalog: ExamSubjectCatalogItem[] = [
   },
   {
     exam: "移民特考",
-    category: "移民行政",
+    category: "三等移民行政",
     subjects: [
       "國文",
       "憲法",
@@ -4615,7 +4615,7 @@ export const examSubjectCatalog: ExamSubjectCatalogItem[] = [
   },
   {
     exam: "移民特考",
-    category: "移民行政-資訊組",
+    category: "三等移民行政-資訊組",
     subjects: [
       "國文",
       "憲法",
@@ -4644,7 +4644,7 @@ export const examSubjectCatalog: ExamSubjectCatalogItem[] = [
   },
   {
     exam: "移民特考",
-    category: "移民行政(選試英文)",
+    category: "三等移民行政(選試英文)",
     subjects: [
       "國文",
       "憲法",
@@ -4672,6 +4672,29 @@ export const examSubjectCatalog: ExamSubjectCatalogItem[] = [
     sourceName: "考選部公告考科 / 超級函授課程表補充",
     sourceUrl: "https://www.superbox.com.tw/category.aspx?id=11251&CL=%E5%B9%B4%E5%BA%A6%E7%8F%AD&Yr=116&chksum=Super168947640Box",
     sourcePriority: "superbox"
+  },
+  {
+    exam: "移民特考",
+    category: "四等移民行政",
+    subjects: [
+      "國文",
+      "法學知識與英文",
+      "行政法概要",
+      "國土安全與國境執法概要",
+      "入出國及移民法規概要"
+    ],
+    commonSubjects: [
+      "國文",
+      "法學知識與英文"
+    ],
+    professionalSubjects: [
+      "行政法概要",
+      "國土安全與國境執法概要",
+      "入出國及移民法規概要"
+    ],
+    sourceName: "考選部公告考科 / 移民特考四等考科",
+    sourceUrl: "https://wwwc.moex.gov.tw/main/news/wfrmNews.aspx?kind=3&menu_id=42&news_id=7665",
+    sourcePriority: "moex"
   },
   {
     exam: "調查局特考",
