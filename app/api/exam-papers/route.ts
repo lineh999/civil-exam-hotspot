@@ -91,6 +91,7 @@ type LoadedQuestion = {
   sourceCategory?: string;
   paperTitle: string;
   paperUrl: string;
+  pageNumber?: number;
   questionNo: string;
   questionType: string;
   stem: string;
@@ -501,24 +502,44 @@ function getBufferWithNodeHttps(url: string) {
   });
 }
 
-const answerTextCache = new Map<string, Promise<string>>();
+type PdfTextPage = {
+  num: number;
+  text: string;
+};
 
-async function getPdfText(url: string) {
-  if (!answerTextCache.has(url)) {
-    answerTextCache.set(url, (async () => {
+type PdfTextDocument = {
+  text: string;
+  pages: PdfTextPage[];
+};
+
+const pdfTextCache = new Map<string, Promise<PdfTextDocument>>();
+
+async function getPdfTextDocument(url: string) {
+  if (!pdfTextCache.has(url)) {
+    pdfTextCache.set(url, (async () => {
       const buffer = await getBufferWithNodeHttps(url);
       const parser = new PDFParse({ data: buffer });
 
       try {
         const result = await parser.getText();
-        return result.text;
+        return {
+          text: result.text,
+          pages: result.pages.map((page) => ({
+            num: page.num,
+            text: page.text,
+          })),
+        };
       } finally {
         await parser.destroy();
       }
     })());
   }
 
-  return answerTextCache.get(url)!;
+  return pdfTextCache.get(url)!;
+}
+
+async function getPdfText(url: string) {
+  return (await getPdfTextDocument(url)).text;
 }
 
 function getCategoryLevel(category: string) {
@@ -738,8 +759,27 @@ function normalizeMoexQuestionText(text: string) {
     .replace(/[ \t]+/g, " ")
     .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "\n")
     .replace(/代號：\d+[\s\S]*?頁次：\d+－\d+/g, "\n")
-    .replace(/[]/g, "")
+    .replace(//g, "（一）")
+    .replace(//g, "（二）")
+    .replace(//g, "（三）")
+    .replace(//g, "（四）")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+function findQuestionPageNumber(
+  pages: PdfTextPage[],
+  questionLabel: string,
+  questionType: "choice" | "essay" | "kokugo",
+) {
+  const escapedLabel = questionLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = questionType === "choice"
+    ? new RegExp(`(?:^|\\n)\\s*${escapedLabel}[.、]?\\s+`)
+    : questionType === "kokugo"
+      ? /(?:^|\n)\s*(?:甲|一)[、.]\s*(?:作文(?:部分)?|作文題)/
+      : new RegExp(`(?:^|\\n)\\s*${escapedLabel}[、.]\\s*`);
+
+  return pages.find((page) => pattern.test(normalizeMoexQuestionText(page.text)))?.num;
 }
 
 function getMoexChoiceQuestionRanges(text: string) {
@@ -891,6 +931,7 @@ function parseMoexQuestionPdf(
   subject: string,
   paperTitle: string,
   paperUrl: string,
+  pages: PdfTextPage[] = [],
 ) {
   const normalized = normalizeMoexQuestionText(text);
   const sourceCategory = normalized.match(/類\s*科：\s*([^\n]+)/)?.[1]?.replace(/\s+/g, "").trim();
@@ -910,6 +951,7 @@ function parseMoexQuestionPdf(
         sourceCategory,
         paperTitle,
         paperUrl,
+        pageNumber: findQuestionPageNumber(pages, "甲", "kokugo"),
         questionNo: "甲",
         questionType: "作文",
         stem: essayStem,
@@ -949,6 +991,7 @@ function parseMoexQuestionPdf(
       sourceCategory,
       paperTitle,
       paperUrl,
+      pageNumber: findQuestionPageNumber(pages, String(questionNumber), "choice"),
       questionNo: `第 ${questionNumber} 題`,
       questionType: isMultiple ? "複選題" : "測驗",
       stem: parsed.stem,
@@ -975,7 +1018,12 @@ function parseMoexQuestionPdf(
 
     const start = (match.index ?? 0) + match[0].length;
     const end = index + 1 < essayMatches.length ? essayMatches[index + 1].index ?? essayPart.length : essayPart.length;
-    const raw = essayPart.slice(start, end).replace(/\s+/g, " ").trim();
+    const raw = essayPart
+      .slice(start, end)
+      .replace(/[ \t]+/g, " ")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
     if (raw.length < 20 || parseMoexOptions(raw)) {
       return [];
@@ -988,6 +1036,7 @@ function parseMoexQuestionPdf(
       sourceCategory,
       paperTitle,
       paperUrl,
+      pageNumber: findQuestionPageNumber(pages, match[1], "essay"),
       questionNo: `第 ${questionNumber} 題`,
       questionType: "申論",
       stem: raw,
@@ -1013,8 +1062,16 @@ async function getMoexQuestionPdfQuestions(
   }
 
   try {
-    const text = await getPdfText(paperUrl);
-    return parseMoexQuestionPdf(text, paperId, year, subject, paperTitle, paperUrl)
+    const document = await getPdfTextDocument(paperUrl);
+    return parseMoexQuestionPdf(
+      document.text,
+      paperId,
+      year,
+      subject,
+      paperTitle,
+      paperUrl,
+      document.pages,
+    )
       .filter((question) => isQuestionCompatibleWithDisplaySubject(subject, question));
   } catch {
     return [];

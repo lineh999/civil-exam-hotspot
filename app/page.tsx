@@ -30,6 +30,7 @@ type LoadedQuestion = {
   sourceCategory?: string;
   paperTitle: string;
   paperUrl: string;
+  pageNumber?: number;
   questionNo: string;
   questionType: string;
   stem: string;
@@ -262,11 +263,25 @@ function getQuestionNumberValue(questionNo: string | undefined) {
 
 function getReadableQuestionStem(question: LoadedQuestion | QuizQuestion) {
   const text = question.stem
-    .replace(/\s+/g, " ")
+    .replace(/\r/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .replace(/□+/g, " ________ ")
     .trim();
 
-  return text ? [text] : [];
+  return text ? text.split(/\n+/).map((line) => line.trim()).filter(Boolean) : [];
+}
+
+function makeExamPaperEmbedUrl(question: LoadedQuestion) {
+  if (
+    !question.pageNumber
+    || !question.paperUrl.includes("wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx")
+  ) {
+    return null;
+  }
+
+  return `/api/exam-file?url=${encodeURIComponent(question.paperUrl)}#page=${question.pageNumber}&zoom=page-width`;
 }
 
 function makeDemoOptions(question: LoadedQuestion) {
@@ -1463,6 +1478,7 @@ function EssayPracticePanel({
   const currentQuestion = essayQuestions[safeIndex];
   const currentRecord = currentQuestion ? essayRecords[currentQuestion.id] : undefined;
   const currentStemLines = currentQuestion ? getReadableQuestionStem(currentQuestion) : [];
+  const currentExamPaperEmbedUrl = currentQuestion ? makeExamPaperEmbedUrl(currentQuestion) : null;
   const currentSourceText = currentQuestion ? makeQuestionSourceText(currentQuestion, selectedExam, category) : "";
   const sourcePapers = useMemo(() => getQuizSourcePapers(essayQuestions), [essayQuestions]);
   const sourceYearText = sourcePapers.map((paper) => `${paper.year} 年`).join("、");
@@ -1624,15 +1640,29 @@ function EssayPracticePanel({
                 </div>
               </div>
 
-              <div className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
-                <div className="grid gap-3 text-base font-bold leading-8 text-[#172033]">
-                  {currentStemLines.map((line, index) => (
-                    <p key={`${currentQuestion.id}-essay-stem-${index}`} className="whitespace-pre-wrap text-lg leading-9">
-                      {line}
-                    </p>
-                  ))}
+              {currentExamPaperEmbedUrl ? (
+                <div className="overflow-hidden rounded border border-[#d7dee9] bg-white">
+                  <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-4 py-3">
+                    <p className="text-sm font-black text-[#0e7490]">官方原卷題面</p>
+                    <p className="text-xs font-bold text-[#64748b]">第 {currentQuestion.pageNumber} 頁</p>
+                  </div>
+                  <iframe
+                    className="block h-[78vh] min-h-[720px] w-full bg-white"
+                    src={currentExamPaperEmbedUrl}
+                    title={`${currentQuestion.year} 年 ${currentQuestion.subject} ${currentQuestion.questionNo}官方試卷頁面`}
+                  />
                 </div>
-              </div>
+              ) : (
+                <div className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                  <div className="grid gap-3 text-base font-bold leading-8 text-[#172033]">
+                    {currentStemLines.map((line, index) => (
+                      <p key={`${currentQuestion.id}-essay-stem-${index}`} className="whitespace-pre-wrap text-lg leading-9">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="grid gap-2">
                 <label className="text-sm font-black text-[#64748b]" htmlFor="essay-answer">我的作答</label>
