@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { request as httpsRequest } from "node:https";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { getDocument, OPS } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { getDocument, OPS, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 // pdfjs 在 Node 端會自動採用內建的 NodeCanvasFactory（依賴 @napi-rs/canvas）。
 // 提供 cMap 與標準字型路徑，確保考選部 PDF 的中文與特殊字型能正確渲染。
@@ -12,6 +12,11 @@ const STANDARD_FONTS_URL = `${pathToFileURL(join(PDFJS_ROOT, "standard_fonts")).
 // 部分考選部試題圖檔以 JPEG2000(JPX) 儲存，需 OpenJPEG wasm 才能解碼，
 // 否則圖會渲染成空白。提供 wasm 路徑給 pdfjs。
 const WASM_URL = `${pathToFileURL(join(PDFJS_ROOT, "wasm")).toString()}/`;
+// Turbopack dev 編譯後 chunk 路徑與 pdfjs 預期不同，明確指定 worker 檔案路徑，
+// 避免「Setting up fake worker failed」錯誤。
+GlobalWorkerOptions.workerSrc = pathToFileURL(
+  join(PDFJS_ROOT, "legacy", "build", "pdf.worker.mjs"),
+).toString();
 
 const RENDER_SCALE = 2;
 const MAX_PAGE = 50;
@@ -22,6 +27,9 @@ const TEXT_UNION_MARGIN = 40; // 主圖叢集向外擴張、納入鄰近文字�
 // 考選部每頁固定有「代號／類科／科目／座號」表頭，其框線會被誤判為圖。
 // 略過頁面最上方這段帶狀區域，避免裁到表頭。
 const HEADER_BAND_RATIO = 0.14;
+// 字型 glyph path 偽陽性過濾門檻：個別路徑 box 在「寬」和「高」都小於此值時視為字型字形，略過。
+// 真實圖形（橫線、表格框線、圖表曲線）至少一個方向會超過此值；字形 glyph 兩個方向通常都 < 45px。
+const MIN_GRAPHIC_DIM = 48; // device pixels (= 24 pt at RENDER_SCALE=2)
 
 const pdfCache = new Map<string, Promise<Buffer>>();
 const imageCache = new Map<string, Promise<Buffer | null>>();
@@ -155,6 +163,13 @@ async function collectGraphicsBoxes(
   const pushBox = (box: Box) => {
     // 完全落在表頭帶狀區域內的繪圖元件直接略過。
     if (box.maxY <= headerCutoff) {
+      return;
+    }
+    // 過濾字型字形 glyph path：若寬與高都小於門檻，判定為字型輪廓路徑（非真實圖形）而略過。
+    // 真實圖形（橫線、表格框線、圖表曲線）在寬或高至少一個方向會超過 MIN_GRAPHIC_DIM。
+    const w = box.maxX - box.minX;
+    const h = box.maxY - box.minY;
+    if (w < MIN_GRAPHIC_DIM && h < MIN_GRAPHIC_DIM) {
       return;
     }
     boxes.push(box);
@@ -334,27 +349,65 @@ async function computeQuestionFigureBox(
     }
   }
 
+  // 先在題塊內搜尋「【參考資料】」或「【提示】」文字標記。
+  // 若找到，直接以該行的 Y 座標為裁切上緣（整個參考資料區從那裡到題塊底）；
+  // 這樣就不依賴圖形叢集偵測，對含公式/表格的參考資料區最可靠。
+  let refSectionTopY: number | null = null;
+  try {
+    const refTc = await pdfPage.getTextContent();
+    for (const item of refTc.items) {
+      if (!("transform" in item) || !Array.isArray(item.transform)) {
+        continue;
+      }
+      const str = typeof item.str === "string" ? item.str : "";
+      if (!str.includes("參考資料") && !str.includes("【提示】")) {
+        continue;
+      }
+      const [, , , , e, f] = item.transform as number[];
+      const [, vy] = viewport.convertToViewportPoint(e, f);
+      if (vy > topY && vy < bottomY) {
+        refSectionTopY = vy;
+        break;
+      }
+    }
+  } catch {
+    // 取文字失敗就繼續用叢集偵測
+  }
+
+  if (refSectionTopY != null) {
+    // 直接裁「參考資料」區到題塊底
+    const padded: Box = {
+      minX: Math.max(0, CROP_PADDING),
+      minY: Math.max(topY, refSectionTopY - CROP_PADDING * 2),
+      maxX: Math.min(fullWidth, fullWidth - CROP_PADDING),
+      maxY: Math.min(bottomY, bottomY),
+    };
+    const cropW = padded.maxX - padded.minX;
+    const cropH = padded.maxY - padded.minY;
+    if (cropW > 0 && cropH > fullHeight * 0.03) {
+      return padded;
+    }
+  }
+
   const headerCutoff = fullHeight * HEADER_BAND_RATIO;
   const boxes = await collectGraphicsBoxes(pdfPage, viewport, headerCutoff);
   const clusters = clusterBoxes(boxes);
 
-  // 取「中心落在題塊內」的叢集，挑面積最大者。
+  // 取「起點在題塊內」的叢集（minY >= topY-5），挑面積最大者。
+  // 用 minY 而非中心：避免橫跨題號標號上下的大叢集（如頁首+題幹文字）被誤選。
   const inBand = clusters
-    .filter((cl) => {
-      const cy = (cl.box.minY + cl.box.maxY) / 2;
-      return cy > topY && cy < bottomY;
-    })
+    .filter((cl) => cl.box.minY >= topY - 5 && cl.box.minY < bottomY)
     .sort((a, b) => boxArea(b.box) - boxArea(a.box));
-
   const figure = inBand[0]?.box;
   if (!figure) {
     return null; // 此題塊內沒有圖。
   }
 
   // 圖需有二維尺寸，否則多半是底線/雜訊。
+  // 表格（h 可能僅數十 px）放寬高度門檻至 0.03；寬度保持 0.10。
   const fw = figure.maxX - figure.minX;
   const fh = figure.maxY - figure.minY;
-  if (fh < fullHeight * 0.06 || fw < fullWidth * 0.12) {
+  if (fh < fullHeight * 0.03 || fw < fullWidth * 0.10) {
     return null;
   }
 

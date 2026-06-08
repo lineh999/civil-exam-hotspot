@@ -285,6 +285,25 @@ function getReadableQuestionStem(question: LoadedQuestion | QuizQuestion) {
 
   const rawLines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
 
+  // 【參考資料】/【提示】（全型括號版）之後的內容為原卷附圖，截掉文字；圖片會另外顯示。
+  const refMarkerIdx = rawLines.findIndex((l) => /【參考資料】|【提示】/.test(l));
+  if (refMarkerIdx > 0) {
+    rawLines.splice(refMarkerIdx);
+  }
+
+  // 移除原卷表格被抽成文字的雜訊行：
+  //   - #N 開頭的表格資料列（如 #1 100 300 40 10%）
+  //   - 主要由數字/單位組成、且數字 ≥4 個的行（如 U 0.1 0.3 0.5 ... Tv 0.008 ...）
+  const isGarbledTableLine = (line: string) => {
+    if (/^#\d+/.test(line.trim())) return true;
+    const nums = line.match(/\d+(?:\.\d+)?/g) ?? [];
+    const total = line.replace(/\s+/g, "").length;
+    return nums.length >= 4 && nums.join("").length / Math.max(total, 1) > 0.35;
+  };
+  const cleanedLines = rawLines.filter((l) => !isGarbledTableLine(l));
+  rawLines.length = 0;
+  rawLines.push(...(cleanedLines.length > 0 ? cleanedLines : rawLines));
+
   // 從尾端移除「原卷附圖的文字標籤」短行（剖面圖層名如「下部」「土壤」、量測值如
   // 「2 m」「1 m」）；遇到正常題幹內容（長句、含標點、或「（提示…」）即停止。
   // 不用配分標記截斷——提示公式常接在「（NN 分）」之後，截斷會誤刪。
@@ -363,7 +382,7 @@ function needsExamPaperVisual(question: LoadedQuestion) {
   }
 
   const stem = question.stem.replace(/\s+/g, "");
-  return /(如圖|如下圖|下圖|上圖|附圖|圖示|示意圖|剖面圖|流程圖|關係圖|統計圖|圖表|附表|下表|表一|表二|圖一|圖二|圖中|如表|依圖|依下圖|如右圖|如左圖)/.test(stem);
+  return /(如圖|如下圖|下圖|上圖|附圖|圖示|示意圖|剖面圖|流程圖|關係圖|統計圖|圖表|附表|下表|表一|表二|圖一|圖二|圖中|如表|依圖|依下圖|如右圖|如左圖|【參考資料】|【提示】)/.test(stem);
 }
 
 function makeDemoOptions(question: LoadedQuestion) {
