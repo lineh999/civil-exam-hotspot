@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getCategoriesForExam, getExamOptions, getGroupedSubjects, getSubjectCatalogItem } from "@/lib/exam-subjects";
+import { examFigureStaticPath } from "@/lib/examFigure";
 import type { HotspotAnalysis, HotspotTopic } from "@/lib/openai-analyzer";
 
 const examOptions = getExamOptions();
@@ -261,8 +262,13 @@ function getQuestionNumberValue(questionNo: string | undefined) {
   return match ? Number(match[0]) : null;
 }
 
+// 另起一段的標記：子題（（一）（二）…、（1）（2）…）或「（提示…」「（註…」。
+const STEM_BREAK_RE = /^[（(]\s*(?:[一二三四五六七八九十]+|\d+)\s*[）)]|^[（(]\s*(?:提示|註)/;
+const isAlnumChar = (ch: string) => /[0-9A-Za-z]/.test(ch);
+const isCjkChar = (ch: string) => /[㐀-鿿]/.test(ch);
+
 function getReadableQuestionStem(question: LoadedQuestion | QuizQuestion) {
-  const text = question.stem
+  let text = question.stem
     .replace(/\r/g, "\n")
     .replace(/[ \t]+/g, " ")
     .replace(/[ \t]+\n/g, "\n")
@@ -270,7 +276,47 @@ function getReadableQuestionStem(question: LoadedQuestion | QuizQuestion) {
     .replace(/□+/g, " ________ ")
     .trim();
 
-  return text ? text.split(/\n+/).map((line) => line.trim()).filter(Boolean) : [];
+  // 折疊 CJK 字元之間被 PDF 拆出的空白（「一 水 平」→「一水平」）；數字/英文旁的空白保留。
+  text = text.replace(/([㐀-鿿])[ \t]+(?=[㐀-鿿])/g, "$1");
+
+  if (!text) {
+    return [];
+  }
+
+  const rawLines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+
+  // 從尾端移除「原卷附圖的文字標籤」短行（剖面圖層名如「下部」「土壤」、量測值如
+  // 「2 m」「1 m」）；遇到正常題幹內容（長句、含標點、或「（提示…」）即停止。
+  // 不用配分標記截斷——提示公式常接在「（NN 分）」之後，截斷會誤刪。
+  const isFigureLabelLine = (line: string) => {
+    const compact = line.replace(/\s+/g, "");
+    if (!compact) return true;
+    if (/^[㐀-鿿]{1,4}$/.test(compact)) return true; // 純中文 ≤4 字：下部、上部土壤
+    if (/^\d+(?:\.\d+)?[a-zA-Z]{0,2}$/.test(compact)) return true; // 量測值：2m、0.5m、18
+    return false;
+  };
+  while (rawLines.length > 1 && isFigureLabelLine(rawLines[rawLines.length - 1])) {
+    rawLines.pop();
+  }
+
+  // 把被 PDF 視覺換行硬切的同段文字接回同一段；遇子題標記才另起一段。
+  const paragraphs: string[] = [];
+  for (const line of rawLines) {
+    if (paragraphs.length === 0 || STEM_BREAK_RE.test(line)) {
+      paragraphs.push(line);
+      continue;
+    }
+    const prev = paragraphs[paragraphs.length - 1];
+    const prevEnd = prev.slice(-1);
+    const nextStart = line.slice(0, 1);
+    // 接合處若一邊是英數、需與另一邊隔開時補一個空白；CJK 與 CJK 間直接相連。
+    const needSpace = (isAlnumChar(prevEnd) && isCjkChar(nextStart))
+      || (isCjkChar(prevEnd) && isAlnumChar(nextStart))
+      || (isAlnumChar(prevEnd) && isAlnumChar(nextStart));
+    paragraphs[paragraphs.length - 1] = prev + (needSpace ? " " : "") + line;
+  }
+
+  return paragraphs;
 }
 
 function makeExamPaperEmbedUrl(question: LoadedQuestion) {
@@ -282,6 +328,42 @@ function makeExamPaperEmbedUrl(question: LoadedQuestion) {
   }
 
   return `/api/exam-file?url=${encodeURIComponent(question.paperUrl)}#page=${question.pageNumber}&zoom=page-width`;
+}
+
+// 伺服器即時渲染並「逐題」裁切該題的附圖：把整頁 render 成 PNG 後，
+// 用文字座標定出本題題塊（一、二、三…標號之間），再取題塊內的繪圖叢集裁出。
+// 帶 q=題號 → 後端走逐題裁切；本題無圖時回 404（前端 onError 隱藏）。
+function makeExamPageApiUrl(question: LoadedQuestion) {
+  if (
+    !question.pageNumber
+    || !question.paperUrl.includes("wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx")
+  ) {
+    return null;
+  }
+
+  const questionNumber = extractQuestionNumber(question.questionNo);
+  const qParam = questionNumber ? `&q=${questionNumber}` : "";
+  return `/api/exam-page-image?url=${encodeURIComponent(question.paperUrl)}&page=${question.pageNumber}&crop=1${qParam}`;
+}
+
+// 主要：預先逐題裁切、人工核對過、commit 進 public/exam-figures 的靜態圖
+//（手機/雲端皆可，且圖一定是該題自己的）。
+function makeExamFigureStaticUrl(question: LoadedQuestion) {
+  const questionNumber = extractQuestionNumber(question.questionNo);
+  if (!questionNumber) {
+    return null;
+  }
+
+  return examFigureStaticPath(question.paperUrl, questionNumber);
+}
+
+function needsExamPaperVisual(question: LoadedQuestion) {
+  if (!question.pageNumber) {
+    return false;
+  }
+
+  const stem = question.stem.replace(/\s+/g, "");
+  return /(如圖|如下圖|下圖|上圖|附圖|圖示|示意圖|剖面圖|流程圖|關係圖|統計圖|圖表|附表|下表|表一|表二|圖一|圖二|圖中|如表|依圖|依下圖|如右圖|如左圖)/.test(stem);
 }
 
 function makeDemoOptions(question: LoadedQuestion) {
@@ -1511,6 +1593,10 @@ function EssayPracticePanel({
   const currentRecord = currentQuestion ? essayRecords[currentQuestion.id] : undefined;
   const currentStemLines = currentQuestion ? getReadableQuestionStem(currentQuestion) : [];
   const currentExamPaperEmbedUrl = currentQuestion ? makeExamPaperEmbedUrl(currentQuestion) : null;
+  const currentExamFigureStaticUrl = currentQuestion ? makeExamFigureStaticUrl(currentQuestion) : null;
+  const currentExamFigureApiUrl = currentQuestion ? makeExamPageApiUrl(currentQuestion) : null;
+  const currentExamFigureUrl = currentExamFigureStaticUrl ?? currentExamFigureApiUrl;
+  const showExamPaperVisual = currentQuestion ? needsExamPaperVisual(currentQuestion) : false;
   const currentSourceText = currentQuestion ? makeQuestionSourceText(currentQuestion, selectedExam, category) : "";
   const sourcePapers = useMemo(() => getQuizSourcePapers(essayQuestions), [essayQuestions]);
   const sourceYearText = sourcePapers.map((paper) => `${paper.year} 年`).join("、");
@@ -1636,8 +1722,8 @@ function EssayPracticePanel({
             <p className="text-xs font-black text-[#64748b]">本次題庫</p>
             <p className="mt-1 text-sm font-bold text-[#334155]">{sourcePapers.length} 份來源試卷｜{essayQuestions.length} 題申論題</p>
             <div className="mt-2 grid gap-1.5">
-              {sourcePapers.slice(0, 5).map((paper) => (
-                <p key={`essay-summary-${paper.year}-${paper.subject}-${paper.paperUrl}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
+              {sourcePapers.slice(0, 5).map((paper, paperIndex) => (
+                <p key={`essay-summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
                   {paper.year} 年｜{selectedExam}｜{paper.category ?? category}｜{paper.subject}｜{paper.questionCount} 題
                 </p>
               ))}
@@ -1672,29 +1758,49 @@ function EssayPracticePanel({
                 </div>
               </div>
 
-              {currentExamPaperEmbedUrl ? (
-                <div className="overflow-hidden rounded border border-[#d7dee9] bg-white">
-                  <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-4 py-3">
-                    <p className="text-sm font-black text-[#0e7490]">官方原卷題面</p>
-                    <p className="text-xs font-bold text-[#64748b]">第 {currentQuestion.pageNumber} 頁</p>
-                  </div>
-                  <iframe
-                    className="block h-[78vh] min-h-[720px] w-full bg-white"
-                    src={currentExamPaperEmbedUrl}
-                    title={`${currentQuestion.year} 年 ${currentQuestion.subject} ${currentQuestion.questionNo}官方試卷頁面`}
-                  />
+              <div className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                <div className="grid gap-3 text-base font-bold leading-8 text-[#172033]">
+                  {currentStemLines.map((line, index) => (
+                    <p key={`${currentQuestion.id}-essay-stem-${index}`} className="whitespace-pre-wrap text-lg leading-9">
+                      {line}
+                    </p>
+                  ))}
                 </div>
-              ) : (
-                <div className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
-                  <div className="grid gap-3 text-base font-bold leading-8 text-[#172033]">
-                    {currentStemLines.map((line, index) => (
-                      <p key={`${currentQuestion.id}-essay-stem-${index}`} className="whitespace-pre-wrap text-lg leading-9">
-                        {line}
-                      </p>
-                    ))}
+
+                {showExamPaperVisual && currentExamFigureUrl ? (
+                  // 圖直接接在題幹文字下方，作為題目內容的一部分（不另立「題目附圖」標題框）。
+                  <div className="mt-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      key={`${currentQuestion.id}-figure`}
+                      className="block w-full max-w-3xl rounded bg-white"
+                      src={currentExamFigureUrl}
+                      alt={`${currentQuestion.year} 年 ${currentQuestion.subject} ${currentQuestion.questionNo} 題目附圖`}
+                      loading="lazy"
+                      onError={(event) => {
+                        // 靜態圖檔不存在 → 改用伺服器逐題裁切；逐題裁切也無圖（404）→ 隱藏。
+                        const img = event.currentTarget;
+                        const onApi = img.src.includes("/api/exam-page-image");
+                        if (!onApi && currentExamFigureApiUrl) {
+                          img.src = currentExamFigureApiUrl;
+                        } else {
+                          img.style.display = "none";
+                        }
+                      }}
+                    />
+                    {currentExamPaperEmbedUrl ? (
+                      <a
+                        className="mt-1 inline-block text-xs font-black text-[#94a3b8] underline-offset-2 hover:text-[#0e7490] hover:underline"
+                        href={currentExamPaperEmbedUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        看不清楚？開啟原卷
+                      </a>
+                    ) : null}
                   </div>
-                </div>
-              )}
+                ) : null}
+              </div>
 
               <div className="grid gap-2">
                 <label className="text-sm font-black text-[#64748b]" htmlFor="essay-answer">我的作答</label>
@@ -2042,8 +2148,8 @@ function QuizPracticePanel({
             <p className="mt-1 text-[11px] font-black text-[#0e7490]">只使用已取得官方答案的選擇題</p>
             <p className="mt-1 text-xs font-bold text-[#94a3b8]">來源年度：{sourceYearText || "尚未載入"}</p>
             <div className="mt-2 grid gap-1.5">
-              {sourcePapers.slice(0, 4).map((paper) => (
-                <p key={`summary-${paper.year}-${paper.subject}-${paper.paperUrl}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
+              {sourcePapers.slice(0, 4).map((paper, paperIndex) => (
+                <p key={`summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
                   {paper.year} 年｜{selectedExam}｜{paper.category ?? category}｜{paper.subject}｜抽 {paper.questionCount} 題
                 </p>
               ))}
@@ -2057,9 +2163,9 @@ function QuizPracticePanel({
             <p className="text-xs font-black text-[#64748b]">來源依據</p>
             <div className="mt-2 grid max-h-36 gap-2 overflow-auto pr-1">
               {sourcePapers.length > 0 ? (
-                sourcePapers.map((paper) => (
+                sourcePapers.map((paper, paperIndex) => (
                   <a
-                    key={`${paper.year}-${paper.subject}-${paper.paperUrl}`}
+                    key={`${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`}
                     className="rounded border border-[#e2e8f0] bg-[#f8fafc] px-2 py-1.5 text-xs font-bold text-[#334155] hover:border-[#0e7490] hover:text-[#0e7490]"
                     href={paper.paperUrl}
                     target="_blank"
