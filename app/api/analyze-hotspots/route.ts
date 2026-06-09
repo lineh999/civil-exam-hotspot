@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { analyzeHotspots } from "@/lib/openai-analyzer";
+import { analyzeHotspotsStream } from "@/lib/openai-analyzer";
 
 export async function POST(request: Request) {
   try {
@@ -19,13 +18,43 @@ export async function POST(request: Request) {
     const { subject, exam, category, questions } = body;
 
     if (!subject || !exam || !category || !questions || questions.length === 0) {
-      return NextResponse.json({ error: "Missing subject, exam, category, or questions." }, { status: 400 });
+      return new Response(
+        `data: ${JSON.stringify({ type: "error", message: "Missing subject, exam, category, or questions." })}\n\n`,
+        { status: 400, headers: { "Content-Type": "text/event-stream" } },
+      );
     }
 
-    const analysis = await analyzeHotspots({ subject, exam, category, questions });
-    return NextResponse.json(analysis);
+    const generator = analyzeHotspotsStream({ subject, exam, category, questions });
+
+    const readable = new ReadableStream({
+      async start(controller) {
+        const enc = new TextEncoder();
+        try {
+          for await (const event of generator) {
+            controller.enqueue(enc.encode(`data: ${JSON.stringify(event)}\n\n`));
+          }
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : "Unknown error";
+          controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: "error", message: msg })}\n\n`));
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return new Response(
+      `data: ${JSON.stringify({ type: "error", message })}\n\n`,
+      { status: 500, headers: { "Content-Type": "text/event-stream" } },
+    );
   }
 }

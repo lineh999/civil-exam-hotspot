@@ -511,6 +511,105 @@ function buildFallbackAnalysis(params: {
   };
 }
 
+export type AnalysisStreamEvent =
+  | { type: "progress"; value: number; label: string }
+  | { type: "result"; data: HotspotAnalysis }
+  | { type: "error"; message: string };
+
+export async function* analyzeHotspotsStream(params: {
+  subject: string;
+  exam: string;
+  category: string;
+  questions: InputQuestion[];
+}): AsyncGenerator<AnalysisStreamEvent> {
+  const { subject, exam, category, questions } = params;
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    yield { type: "error", message: "OPENAI_API_KEY is not set." };
+    return;
+  }
+
+  yield { type: "progress", value: 8, label: "篩選題目…" };
+
+  const client = new OpenAI({ apiKey, fetch: openaiFetch });
+  const years = [...new Set(questions.map((q) => q.year))].sort();
+  const realQuestions = questions.filter(
+    (q) => q.stem && q.stem.length > 10 && q.questionType !== "待補" && !isPlaceholderStem(q.stem),
+  );
+  const knowledgeMode = realQuestions.length === 0;
+  const questionsToAnalyze = knowledgeMode ? [] : realQuestions;
+
+  const systemPrompt = buildSystemPrompt(subject, exam, category, knowledgeMode, questionsToAnalyze.length);
+  const userPrompt = buildUserPrompt(years, questionsToAnalyze, knowledgeMode);
+
+  yield { type: "progress", value: 18, label: "傳送至 AI…" };
+
+  let rawJson = "";
+  // gpt-4o-mini 典型回覆約 1200-2000 tokens；進度從 20% 爬升到 88%
+  const ESTIMATED_CHUNKS = 100;
+  let chunkCount = 0;
+
+  try {
+    const stream = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      response_format: { type: "json_object" },
+      stream: true,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content ?? "";
+      rawJson += delta;
+
+      if (delta) {
+        chunkCount++;
+        const ratio = Math.min(chunkCount / ESTIMATED_CHUNKS, 1);
+        // easeOut: 快速起跳，後段放緩
+        const progress = Math.round(20 + (1 - Math.pow(1 - ratio, 2)) * 68);
+        yield { type: "progress", value: Math.min(progress, 88), label: "AI 分析中…" };
+      }
+    }
+  } catch (error) {
+    yield { type: "error", message: `OpenAI API 分析失敗：${error instanceof Error ? error.message : "Unknown error"}` };
+    return;
+  }
+
+  yield { type: "progress", value: 93, label: "整理結果…" };
+
+  let parsed: { hotspots: HotspotTopic[]; overallTrend: string; predictionHints: string[] };
+  try {
+    parsed = JSON.parse(rawJson) as typeof parsed;
+  } catch {
+    yield { type: "error", message: "AI 回應格式解析失敗，請重試。" };
+    return;
+  }
+
+  const result: HotspotAnalysis = {
+    subject,
+    exam,
+    category,
+    analyzedYears: years,
+    totalQuestions: questionsToAnalyze.length,
+    loadedQuestions: questions.length,
+    analysisCoverageNote:
+      questionsToAnalyze.length < questions.length
+        ? `本次載入 ${questions.length} 題，其中 ${questionsToAnalyze.length} 題有可分析題幹。`
+        : undefined,
+    hotspots: enrichHotspotQuestions(ensureHotspotCoverage(parsed.hotspots ?? [], questionsToAnalyze, subject), questionsToAnalyze),
+    overallTrend: parsed.overallTrend ?? "",
+    predictionHints: parsed.predictionHints ?? [],
+    generatedAt: new Date().toISOString(),
+  };
+
+  yield { type: "progress", value: 100, label: "完成！" };
+  yield { type: "result", data: result };
+}
+
 export async function analyzeHotspots(params: {
   subject: string;
   exam: string;

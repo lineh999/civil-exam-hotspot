@@ -733,6 +733,7 @@ export default function HomePage() {
   const [loadedQuestions, setLoadedQuestions] = useState<LoadedQuestion[]>([]);
   const [analysisResults, setAnalysisResults] = useState<Record<string, HotspotAnalysis>>({});
   const [analyzingSubject, setAnalyzingSubject] = useState<string | null>(null);
+  const [analyzingProgress, setAnalyzingProgress] = useState(0);
   const [analysisError, setAnalysisError] = useState<Record<string, string>>({});
   const canStartAnalysis = Boolean(selectedExam && effectiveCategory && targetSubjects.length > 0 && selectedYears.length > 0);
   const fallbackPapers = useMemo(() => makeLoadedPapers(selectedExam, effectiveCategory, targetSubjects, selectedYears, categoryIndex), [selectedExam, effectiveCategory, targetSubjects, selectedYears, categoryIndex]);
@@ -977,6 +978,7 @@ export default function HomePage() {
   async function analyzeSubject(subject: string) {
     if (analyzingSubject) return;
     setAnalyzingSubject(subject);
+    setAnalyzingProgress(0);
     setAnalysisError((prev) => ({ ...prev, [subject]: "" }));
 
     try {
@@ -986,18 +988,50 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject, exam: selectedExam, category: effectiveCategory, questions }),
       });
-      const data = (await response.json()) as HotspotAnalysis & { error?: string };
 
-      if (!response.ok || data.error) {
-        throw new Error(data.error ?? "AI 分析失敗");
+      if (!response.ok || !response.body) {
+        throw new Error("AI 分析失敗");
       }
 
-      setAnalysisResults((prev) => ({ ...prev, [subject]: data }));
-      setSubjectName(subject);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+
+        for (const part of parts) {
+          if (!part.startsWith("data: ")) continue;
+          const eventJson = part.slice(6).trim();
+          if (!eventJson) continue;
+
+          const event = JSON.parse(eventJson) as
+            | { type: "progress"; value: number; label: string }
+            | { type: "result"; data: HotspotAnalysis }
+            | { type: "error"; message: string };
+
+          if (event.type === "progress") {
+            setAnalyzingProgress(event.value);
+          } else if (event.type === "result") {
+            setAnalyzingProgress(100);
+            setAnalysisResults((prev) => ({ ...prev, [subject]: event.data }));
+            setSubjectName(subject);
+          } else if (event.type === "error") {
+            throw new Error(event.message);
+          }
+        }
+      }
     } catch (error) {
       setAnalysisError((prev) => ({ ...prev, [subject]: error instanceof Error ? error.message : "AI 分析失敗" }));
     } finally {
       setAnalyzingSubject(null);
+      setAnalyzingProgress(0);
     }
   }
 
@@ -1456,6 +1490,14 @@ export default function HomePage() {
                           >
                             {isAnalyzing ? "分析中…" : hasResult ? "重新分析" : "分析"}
                           </button>
+                          {isAnalyzing && (
+                            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e2e8f0]">
+                              <div
+                                className="h-full rounded-full bg-[#0e7490] transition-[width] duration-300 ease-out"
+                                style={{ width: `${analyzingProgress}%` }}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
