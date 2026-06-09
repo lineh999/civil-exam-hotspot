@@ -1661,6 +1661,14 @@ function EssayPracticePanel({
   const currentSourceText = currentQuestion ? makeQuestionSourceText(currentQuestion, selectedExam, category) : "";
   const sourcePapers = useMemo(() => getQuizSourcePapers(essayQuestions), [essayQuestions]);
   const sourceYearText = sourcePapers.map((paper) => `${paper.year} 年`).join("、");
+  const pendingPapers = useMemo(
+    () => visiblePapers.filter(
+      (paper) =>
+        paper.source === "pending" &&
+        (paper.subject.includes(essaySubject) || essaySubject.includes(paper.subject)),
+    ),
+    [visiblePapers, essaySubject],
+  );
   const draftedCount = essayQuestions.filter((question) => essayRecords[question.id]?.answer?.trim()).length;
   const reviewedCount = essayQuestions.filter((question) => essayRecords[question.id]?.review).length;
   const [isReviewingEssay, setIsReviewingEssay] = useState(false);
@@ -1781,7 +1789,12 @@ function EssayPracticePanel({
 
           <div className="mt-4 rounded border border-[#e2e8f0] bg-[#f8fafc] p-3">
             <p className="text-xs font-black text-[#64748b]">本次題庫</p>
-            <p className="mt-1 text-sm font-bold text-[#334155]">{sourcePapers.length} 份來源試卷｜{essayQuestions.length} 題申論題</p>
+            <p className="mt-1 text-sm font-bold text-[#334155]">{sourcePapers.length} 份已解析｜{essayQuestions.length} 題申論題</p>
+            {pendingPapers.length > 0 && (
+              <p className="mt-1 text-xs font-bold text-[#b45309]">
+                ⏳ 另有 {pendingPapers.length} 份試卷等待解析（{Array.from(new Set(pendingPapers.map((p) => `${p.year} 年`))).join("、")}）
+              </p>
+            )}
             <div className="mt-2 grid gap-1.5">
               {sourcePapers.slice(0, 5).map((paper, paperIndex) => (
                 <p key={`essay-summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
