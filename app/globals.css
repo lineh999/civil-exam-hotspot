@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  background: #f6f3ed;
-  color: #1d252b;
+  background: #f5f1e8;
+  color: #2c2a24;
 }
 
 body {
@@ -14,6 +14,12 @@ body {
     "Noto Sans TC",
     "Microsoft JhengHei",
     sans-serif;
+}
+
+h1,
+h2 {
+  font-family: var(--font-serif-tc), "Noto Serif TC", serif;
+  letter-spacing: 0.01em;
 }
 
 button,

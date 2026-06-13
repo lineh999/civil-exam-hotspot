@@ -14,7 +14,7 @@ export default function MethodologyPage() {
       </section>
 
       <section className="mx-auto grid max-w-5xl gap-5 px-6 py-6">
-        <div className="rounded-lg border border-[#ded6ca] bg-white p-5 shadow-sm">
+        <div className="rounded-lg border border-[#ded6ca] bg-[#fffdf8] p-5 shadow-sm">
           <p className="text-sm font-black text-[#a94a2a]">目前狀態</p>
           <h2 className="mt-1 text-2xl font-black">畫面上的排行是原型資料</h2>
           <p className="mt-3 leading-7 text-[#4f5a53]">
@@ -25,7 +25,7 @@ export default function MethodologyPage() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-[#ded6ca] bg-white p-5 shadow-sm">
+        <div className="rounded-lg border border-[#ded6ca] bg-[#fffdf8] p-5 shadow-sm">
           <p className="text-sm font-black text-[#a94a2a]">正式流程</p>
           <h2 className="mt-1 text-2xl font-black">熱點應該先抓資料，再離線分析</h2>
           <div className="mt-4 grid gap-3">
@@ -49,7 +49,7 @@ export default function MethodologyPage() {
         </div>
 
         <div className="grid grid-cols-[1fr_1fr] gap-5 max-[820px]:grid-cols-1">
-          <div className="rounded-lg border border-[#ded6ca] bg-white p-5 shadow-sm">
+          <div className="rounded-lg border border-[#ded6ca] bg-[#fffdf8] p-5 shadow-sm">
             <p className="text-sm font-black text-[#a94a2a]">分數建議</p>
             <h2 className="mt-1 text-2xl font-black">先用可解釋公式</h2>
             <pre className="mt-4 overflow-auto rounded bg-[#1f2b32] p-4 text-sm leading-7 text-white">
@@ -64,7 +64,7 @@ export default function MethodologyPage() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-[#ded6ca] bg-white p-5 shadow-sm">
+          <div className="rounded-lg border border-[#ded6ca] bg-[#fffdf8] p-5 shadow-sm">
             <p className="text-sm font-black text-[#a94a2a]">行政法章節</p>
             <h2 className="mt-1 text-2xl font-black">第一版分類</h2>
             <div className="mt-4 flex flex-wrap gap-2">

@@ -1287,13 +1287,13 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-[#172033]">
-      <section className="border-b border-[#dce3ef] bg-white">
+    <main className="min-h-screen bg-[#f5f1e8] text-[#2c2a24]">
+      <section className="border-b border-[#e0d8c4] bg-[#fffdf8]">
         <div className="mx-auto max-w-7xl px-6 py-6">
           <h1 className="text-3xl font-black tracking-normal max-[640px]:text-2xl">
             {activeFeature === "hotspots" ? "近幾年命題熱點分析" : activeFeature === "quiz" ? "近年選擇題歷屆試題" : "近年申論題歷屆試題"}
           </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5d6678]">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#8a8474]">
             {activeFeature === "hotspots"
               ? "先選擇考試類科與年份，系統會抓取共同科目與專業科目的歷屆試題，再用 AI 分析命題熱點；每個熱點都能追溯到來源試卷與題目。"
               : activeFeature === "quiz"
@@ -1310,8 +1310,8 @@ export default function HomePage() {
                 key={tab.id}
                 className={`rounded border px-4 py-2 text-sm font-black ${
                   activeFeature === tab.id
-                    ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
-                    : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                    ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                    : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                 }`}
                 onClick={() => changeFeature(tab.id)}
                 type="button"
@@ -1324,7 +1324,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 py-6">
-        <section className="rounded-lg border border-[#dce3ef] bg-white p-5 shadow-sm">
+        <section className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-5 shadow-sm">
           <div className="grid max-w-4xl gap-5">
             <div className="grid max-w-md gap-2">
               <label className="text-sm font-black" htmlFor="exam">
@@ -1332,7 +1332,7 @@ export default function HomePage() {
               </label>
               <select
                 id="exam"
-                className="h-11 rounded border border-[#cbd5e1] px-3"
+                className="h-11 rounded border border-[#d4cab0] px-3"
                 value={selectedExam}
                 onChange={(event) => changeExam(event.currentTarget.value)}
                 onInput={(event) => changeExam(event.currentTarget.value)}
@@ -1350,7 +1350,7 @@ export default function HomePage() {
               <select
                 key={selectedExam}
                 id="category"
-                className="h-11 rounded border border-[#cbd5e1] px-3"
+                className="h-11 rounded border border-[#d4cab0] px-3"
                 value={effectiveCategory}
                 onChange={(event) => changeCategory(event.currentTarget.value)}
                 onInput={(event) => changeCategory(event.currentTarget.value)}
@@ -1364,7 +1364,7 @@ export default function HomePage() {
             <div className="grid gap-2">
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <label className="text-sm font-black">選擇分析年份</label>
-                <span className="text-xs font-bold text-[#64748b]">最多選擇 3 個年度</span>
+                <span className="text-xs font-bold text-[#8a8474]">最多選擇 3 個年度</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {yearOptions.map((year) => {
@@ -1374,7 +1374,7 @@ export default function HomePage() {
                     <button
                       key={year}
                       className={`rounded border px-4 py-2 text-sm font-black ${
-                        active ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]" : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                        active ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]" : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                       } ${disabled ? "cursor-not-allowed opacity-45" : ""}`}
                       onClick={() => toggleYear(year)}
                       type="button"
@@ -1397,30 +1397,30 @@ export default function HomePage() {
             </div>
 
             <button
-              className="w-fit rounded bg-[#0f172a] px-5 py-3 text-sm font-black text-white hover:bg-[#1e293b] disabled:cursor-wait disabled:opacity-60"
+              className="w-fit rounded bg-[#1a5841] px-5 py-3 text-sm font-black text-white hover:bg-[#134635] disabled:cursor-wait disabled:opacity-60"
               disabled={isLoadingPapers || !canStartAnalysis}
               onClick={startAnalysis}
             >
               {isLoadingPapers ? "處理中" : activeFeature === "hotspots" ? "產生命題熱點分析" : activeFeature === "quiz" ? "載入選擇題" : "載入申論題"}
             </button>
             {loadProgress ? (
-              <div className="max-w-2xl rounded border border-[#dce3ef] bg-[#f8fafc] p-4">
+              <div className="max-w-2xl rounded border border-[#e0d8c4] bg-[#faf6ec] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[#0e7490]">{loadProgress.label}</p>
-                    <p className="mt-1 text-xs font-bold text-[#64748b]">{loadProgress.detail}</p>
+                    <p className="text-sm font-black text-[#1a5841]">{loadProgress.label}</p>
+                    <p className="mt-1 text-xs font-bold text-[#8a8474]">{loadProgress.detail}</p>
                   </div>
-                  <span className="text-sm font-black text-[#c2410c]">{loadProgress.percent}%</span>
+                  <span className="text-sm font-black text-[#a3471d]">{loadProgress.percent}%</span>
                 </div>
-                <div className="mt-3 h-3 overflow-hidden rounded-full bg-[#e2e8f0]">
+                <div className="mt-3 h-3 overflow-hidden rounded-full bg-[#e3dcc9]">
                   <div
-                    className="h-full rounded-full bg-[#0e7490] transition-all duration-500"
+                    className="h-full rounded-full bg-[#1a5841] transition-all duration-500"
                     style={{ width: `${loadProgress.percent}%` }}
                   />
                 </div>
               </div>
             ) : null}
-            {loadError ? <p className="text-sm font-bold text-[#c2410c]">部分資料暫時無法完整載入，已先完成可用資料整理。</p> : null}
+            {loadError ? <p className="text-sm font-bold text-[#a3471d]">部分資料暫時無法完整載入，已先完成可用資料整理。</p> : null}
           </div>
         </section>
 
@@ -1428,25 +1428,25 @@ export default function HomePage() {
           activeFeature === "hotspots" ? (
             <>
             <section className="grid grid-cols-3 gap-4 max-[920px]:grid-cols-1">
-              <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
+              <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
                 <p className="text-xl font-black">{selectedExam}</p>
                 <p className="mt-2 text-3xl font-black">{effectiveCategory}</p>
               </div>
-              <button className="rounded-lg border border-[#dce3ef] bg-white p-4 text-left shadow-sm hover:border-[#f97316]" onClick={() => setDrawerMode("papers")} type="button">
-                <p className="text-sm font-black text-[#64748b]">已載入試卷</p>
-                <p className="mt-1 text-3xl font-black text-[#c2410c]">{formatNumber(visiblePapers.length)}</p>
-                <p className="mt-1 text-xs font-bold text-[#64748b]">{getYearRange(selectedYears)}</p>
+              <button className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 text-left shadow-sm hover:border-[#f97316]" onClick={() => setDrawerMode("papers")} type="button">
+                <p className="text-sm font-black text-[#8a8474]">已載入試卷</p>
+                <p className="mt-1 text-3xl font-black text-[#a3471d]">{formatNumber(visiblePapers.length)}</p>
+                <p className="mt-1 text-xs font-bold text-[#8a8474]">{getYearRange(selectedYears)}</p>
               </button>
-              <button className="rounded-lg border border-[#dce3ef] bg-white p-4 text-left shadow-sm hover:border-[#0e7490]" onClick={() => setDrawerMode("questions")} type="button">
-                <p className="text-sm font-black text-[#64748b]">已載入題目</p>
-                <p className="mt-1 text-3xl font-black text-[#0e7490]">{formatNumber(visibleQuestions.length)}</p>
-                <p className="mt-1 text-xs font-bold text-[#64748b]">共同科目 + 專業科目</p>
+              <button className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 text-left shadow-sm hover:border-[#1a5841]" onClick={() => setDrawerMode("questions")} type="button">
+                <p className="text-sm font-black text-[#8a8474]">已載入題目</p>
+                <p className="mt-1 text-3xl font-black text-[#1a5841]">{formatNumber(visibleQuestions.length)}</p>
+                <p className="mt-1 text-xs font-bold text-[#8a8474]">共同科目 + 專業科目</p>
               </button>
             </section>
 
             <section className="grid grid-cols-[330px_1fr] gap-6 max-[980px]:grid-cols-1">
-              <aside className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-                <p className="text-sm font-black text-[#0e7490]">科目分析</p>
+              <aside className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+                <p className="text-sm font-black text-[#1a5841]">科目分析</p>
                 <h2 className="mt-1 text-xl font-black">選一科看熱點</h2>
                 <div className="mt-3 grid gap-2">
                   {subjectStats.map((item) => {
@@ -1457,32 +1457,32 @@ export default function HomePage() {
                     return (
                       <div
                         key={item.subject}
-                        className={`rounded border ${activeSubject?.subject === item.subject ? "border-[#0e7490] bg-[#ecfeff]" : "border-[#e2e8f0]"}`}
+                        className={`rounded border ${activeSubject?.subject === item.subject ? "border-[#1a5841] bg-[#e9f0e9]" : "border-[#e3dcc9]"}`}
                       >
                         <button
-                          className="w-full px-3 py-3 text-left hover:bg-[#f0fdfe]"
+                          className="w-full px-3 py-3 text-left hover:bg-[#f2f6f0]"
                           onClick={() => setSubjectName(item.subject)}
                           type="button"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <strong>{item.subject}</strong>
-                            <span className="text-sm font-black text-[#c2410c]">{item.questionCount} 題</span>
+                            <span className="text-sm font-black text-[#a3471d]">{item.questionCount} 題</span>
                           </div>
-                          <p className="mt-1 text-xs font-bold text-[#64748b]">
+                          <p className="mt-1 text-xs font-bold text-[#8a8474]">
                             {item.mergedSubjects.length > 1
                               ? `${item.mergedPaperCount} 份合卷｜同一份試卷含 ${item.mergedSubjects.join("、")}`
                               : `${item.paperCount} 份試卷｜${hasResult ? "已完成 AI 分析" : "等待 AI 分析"}`}
                           </p>
                         </button>
-                        <div className="border-t border-[#e2e8f0] px-3 py-2">
+                        <div className="border-t border-[#e3dcc9] px-3 py-2">
                           {hasError ? (
-                            <p className="text-xs font-bold text-[#c2410c]">{analysisError[item.subject]}</p>
+                            <p className="text-xs font-bold text-[#a3471d]">{analysisError[item.subject]}</p>
                           ) : null}
                           <button
                             className={`rounded px-3 py-1.5 text-xs font-black ${
                               hasResult
-                                ? "border border-[#0e7490] bg-[#ecfeff] text-[#0e7490] hover:bg-[#cffafe]"
-                                : "bg-[#0f172a] text-white hover:bg-[#1e293b]"
+                                ? "border border-[#1a5841] bg-[#e9f0e9] text-[#1a5841] hover:bg-[#dbe7dc]"
+                                : "bg-[#1a5841] text-white hover:bg-[#134635]"
                             } disabled:cursor-wait disabled:opacity-60`}
                             disabled={!!analyzingSubject}
                             onClick={(e) => { e.stopPropagation(); void analyzeSubject(item.subject); }}
@@ -1491,9 +1491,9 @@ export default function HomePage() {
                             {isAnalyzing ? "分析中…" : hasResult ? "重新分析" : "分析"}
                           </button>
                           {isAnalyzing && (
-                            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e2e8f0]">
+                            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e3dcc9]">
                               <div
-                                className="h-full rounded-full bg-[#0e7490] transition-[width] duration-300 ease-out"
+                                className="h-full rounded-full bg-[#1a5841] transition-[width] duration-300 ease-out"
                                 style={{ width: `${analyzingProgress}%` }}
                               />
                             </div>
@@ -1505,10 +1505,10 @@ export default function HomePage() {
                 </div>
               </aside>
 
-              <section className="rounded-lg border border-[#dce3ef] bg-white p-5 shadow-sm">
+              <section className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-5 shadow-sm">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[#0e7490]">
+                    <p className="text-sm font-black text-[#1a5841]">
                       {activeSubject?.subject}
                       {activeSubject && activeSubject.mergedSubjects.length > 1
                         ? `（法學知識與英文合卷）`
@@ -1517,16 +1517,16 @@ export default function HomePage() {
                     <h2 className="mt-1 text-3xl font-black">近幾年命題熱點</h2>
                   </div>
                   <div className="text-right max-[640px]:text-left">
-                    <p className="text-2xl font-black text-[#c2410c]">{activeSubject?.questionCount ?? 0}</p>
-                    <p className="text-xs font-bold text-[#64748b]">題目來源</p>
+                    <p className="text-2xl font-black text-[#a3471d]">{activeSubject?.questionCount ?? 0}</p>
+                    <p className="text-xs font-bold text-[#8a8474]">題目來源</p>
                   </div>
                 </div>
 
                 {activeSubject && analysisResults[activeSubject.subject] ? (
                   <HotspotResults analysis={analysisResults[activeSubject.subject]} />
                 ) : (
-                  <div className="mt-6 rounded-lg border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-8 text-center">
-                    <p className="text-sm font-bold text-[#64748b]">
+                  <div className="mt-6 rounded-lg border border-dashed border-[#d4cab0] bg-[#faf6ec] p-8 text-center">
+                    <p className="text-sm font-bold text-[#8a8474]">
                       點擊左側科目旁的「分析」按鈕，AI 將自動分析命題熱點
                     </p>
                   </div>
@@ -1595,19 +1595,19 @@ export default function HomePage() {
 }
 
 function SubjectList({ title, tone, subjects }: { title: string; tone: "blue" | "orange"; subjects: string[] }) {
-  const color = tone === "blue" ? "text-[#0e7490]" : "text-[#c2410c]";
+  const color = tone === "blue" ? "text-[#1a5841]" : "text-[#a3471d]";
 
   return (
-    <div className="rounded border border-[#dce3ef] bg-[#f8fafc] p-3">
+    <div className="rounded border border-[#e0d8c4] bg-[#faf6ec] p-3">
       <p className={`mb-2 text-xs font-black ${color}`}>{title}</p>
       <div className="grid gap-2">
         {subjects.length > 0 ? subjects.map((subject, index) => (
-          <div key={`${subject}-${index}`} className="grid grid-cols-[28px_1fr] items-center gap-2 rounded border border-[#e2e8f0] bg-white px-3 py-2 text-sm font-bold">
+          <div key={`${subject}-${index}`} className="grid grid-cols-[28px_1fr] items-center gap-2 rounded border border-[#e3dcc9] bg-[#fffdf8] px-3 py-2 text-sm font-bold">
             <span className={`font-black ${color}`}>{index + 1}</span>
             {subject}
           </div>
         )) : (
-          <p className="rounded border border-dashed border-[#cbd5e1] bg-white px-3 py-3 text-xs font-bold text-[#94a3b8]">
+          <p className="rounded border border-dashed border-[#d4cab0] bg-[#fffdf8] px-3 py-3 text-xs font-bold text-[#a39c8a]">
             此區沒有申論題科目
           </p>
         )}
@@ -1723,32 +1723,32 @@ function EssayPracticePanel({
   return (
     <section className="grid gap-5">
       <section className="grid grid-cols-3 gap-4 max-[920px]:grid-cols-1">
-        <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
           <p className="text-xl font-black">{selectedExam}</p>
           <p className="mt-2 text-3xl font-black">{category}</p>
         </div>
-        <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-          <p className="text-sm font-black text-[#64748b]">本次申論題數</p>
-          <p className="mt-1 text-3xl font-black text-[#0e7490]">{formatNumber(essayQuestions.length)}</p>
-          <p className="mt-1 text-xs font-bold text-[#64748b]">{sourceYearText || getYearRange(selectedYears)}</p>
+        <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+          <p className="text-sm font-black text-[#8a8474]">本次申論題數</p>
+          <p className="mt-1 text-3xl font-black text-[#1a5841]">{formatNumber(essayQuestions.length)}</p>
+          <p className="mt-1 text-xs font-bold text-[#8a8474]">{sourceYearText || getYearRange(selectedYears)}</p>
         </div>
-        <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-          <p className="text-sm font-black text-[#64748b]">練習紀錄</p>
-          <p className="mt-1 text-3xl font-black text-[#c2410c]">{formatNumber(draftedCount)}</p>
-          <p className="mt-1 text-xs font-bold text-[#64748b]">已作答 {draftedCount} 題｜AI 已批閱 {reviewedCount} 題</p>
+        <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+          <p className="text-sm font-black text-[#8a8474]">練習紀錄</p>
+          <p className="mt-1 text-3xl font-black text-[#a3471d]">{formatNumber(draftedCount)}</p>
+          <p className="mt-1 text-xs font-bold text-[#8a8474]">已作答 {draftedCount} 題｜AI 已批閱 {reviewedCount} 題</p>
         </div>
       </section>
 
       <section className="grid grid-cols-[340px_1fr] gap-5 max-[980px]:grid-cols-1">
-        <aside className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-          <p className="text-sm font-black text-[#0e7490]">申論題歷屆試題測驗</p>
+        <aside className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+          <p className="text-sm font-black text-[#1a5841]">申論題歷屆試題測驗</p>
           <h2 className="mt-1 text-xl font-black">題型整理與作答練習</h2>
 
           <div className="mt-4 grid gap-2">
-            <label className="text-xs font-black text-[#64748b]" htmlFor="essay-subject">選擇科目</label>
+            <label className="text-xs font-black text-[#8a8474]" htmlFor="essay-subject">選擇科目</label>
             <select
               id="essay-subject"
-              className="h-10 rounded border border-[#cbd5e1] px-3 text-sm font-bold"
+              className="h-10 rounded border border-[#d4cab0] px-3 text-sm font-bold"
               value={essaySubject}
               onChange={(event) => onSubjectChange(event.currentTarget.value)}
             >
@@ -1760,8 +1760,8 @@ function EssayPracticePanel({
 
           <div className="mt-4 grid gap-2">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-black text-[#64748b]">選擇年度</p>
-              <span className="text-[11px] font-bold text-[#94a3b8]">最多 3 年</span>
+              <p className="text-xs font-black text-[#8a8474]">選擇年度</p>
+              <span className="text-[11px] font-bold text-[#a39c8a]">最多 3 年</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {essayAvailableYears.map((year) => {
@@ -1773,8 +1773,8 @@ function EssayPracticePanel({
                     key={year}
                     className={`rounded border px-3 py-2 text-xs font-black ${
                       active
-                        ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
-                        : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                        ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                        : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                     } ${disabled ? "cursor-not-allowed opacity-45" : ""}`}
                     disabled={disabled}
                     onClick={() => onYearToggle(year)}
@@ -1787,9 +1787,9 @@ function EssayPracticePanel({
             </div>
           </div>
 
-          <div className="mt-4 rounded border border-[#e2e8f0] bg-[#f8fafc] p-3">
-            <p className="text-xs font-black text-[#64748b]">本次題庫</p>
-            <p className="mt-1 text-sm font-bold text-[#334155]">{sourcePapers.length} 份已解析｜{essayQuestions.length} 題申論題</p>
+          <div className="mt-4 rounded border border-[#e3dcc9] bg-[#faf6ec] p-3">
+            <p className="text-xs font-black text-[#8a8474]">本次題庫</p>
+            <p className="mt-1 text-sm font-bold text-[#4a453a]">{sourcePapers.length} 份已解析｜{essayQuestions.length} 題申論題</p>
             {pendingPapers.length > 0 && (
               <p className="mt-1 text-xs font-bold text-[#b45309]">
                 ⏳ 另有 {pendingPapers.length} 份試卷等待解析（{Array.from(new Set(pendingPapers.map((p) => `${p.year} 年`))).join("、")}）
@@ -1797,7 +1797,7 @@ function EssayPracticePanel({
             )}
             <div className="mt-2 grid gap-1.5">
               {sourcePapers.slice(0, 5).map((paper, paperIndex) => (
-                <p key={`essay-summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
+                <p key={`essay-summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e3dcc9] bg-[#fffdf8] px-2 py-1 text-[11px] font-bold leading-5 text-[#6b6557]">
                   {paper.year} 年｜{selectedExam}｜{paper.category ?? category}｜{paper.subject}｜{paper.questionCount} 題
                 </p>
               ))}
@@ -1805,35 +1805,35 @@ function EssayPracticePanel({
           </div>
         </aside>
 
-        <section className="rounded-lg border border-[#dce3ef] bg-white p-5 shadow-sm">
+        <section className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-5 shadow-sm">
           {currentQuestion ? (
             <div className="grid gap-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[#0e7490]">{currentQuestion.subject}｜{currentQuestion.year} 年</p>
+                  <p className="text-sm font-black text-[#1a5841]">{currentQuestion.subject}｜{currentQuestion.year} 年</p>
                   <h2 className="mt-1 text-2xl font-black">{currentQuestion.questionNo}</h2>
-                  <p className="mt-1 text-xs font-bold text-[#64748b]">來源：{currentSourceText}</p>
+                  <p className="mt-1 text-xs font-bold text-[#8a8474]">來源：{currentSourceText}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     className={`rounded border px-3 py-2 text-xs font-black ${
                       currentRecord?.flagged
-                        ? "border-[#f97316] bg-[#fff7ed] text-[#c2410c]"
-                        : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                        ? "border-[#f97316] bg-[#fff7ed] text-[#a3471d]"
+                        : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                     }`}
                     onClick={() => onUpdateEssayRecord(currentQuestion, { flagged: !currentRecord?.flagged })}
                     type="button"
                   >
                     {currentRecord?.flagged ? "已標記重點" : "標記重點"}
                   </button>
-                  <a className="rounded border border-[#cbd5e1] px-3 py-2 text-xs font-black hover:bg-[#f8fafc]" href={currentQuestion.paperUrl} target="_blank" rel="noreferrer">
+                  <a className="rounded border border-[#d4cab0] px-3 py-2 text-xs font-black hover:bg-[#faf6ec]" href={currentQuestion.paperUrl} target="_blank" rel="noreferrer">
                     開啟該試卷
                   </a>
                 </div>
               </div>
 
-              <div className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
-                <div className="grid gap-3 text-base font-bold leading-8 text-[#172033]">
+              <div className="rounded border border-[#e3dcc9] bg-[#faf6ec] p-4">
+                <div className="grid gap-3 text-base font-bold leading-8 text-[#2c2a24]">
                   {currentStemLines.map((line, index) => (
                     <p key={`${currentQuestion.id}-essay-stem-${index}`} className="whitespace-pre-wrap text-lg leading-9">
                       {line}
@@ -1847,7 +1847,7 @@ function EssayPracticePanel({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       key={`${currentQuestion.id}-figure`}
-                      className="block w-full max-w-3xl rounded bg-white"
+                      className="block w-full max-w-3xl rounded bg-[#fffdf8]"
                       src={currentExamFigureUrl}
                       alt={`${currentQuestion.year} 年 ${currentQuestion.subject} ${currentQuestion.questionNo} 題目附圖`}
                       loading="lazy"
@@ -1864,7 +1864,7 @@ function EssayPracticePanel({
                     />
                     {currentExamPaperEmbedUrl ? (
                       <a
-                        className="mt-1 inline-block text-xs font-black text-[#94a3b8] underline-offset-2 hover:text-[#0e7490] hover:underline"
+                        className="mt-1 inline-block text-xs font-black text-[#a39c8a] underline-offset-2 hover:text-[#1a5841] hover:underline"
                         href={currentExamPaperEmbedUrl}
                         target="_blank"
                         rel="noreferrer"
@@ -1877,20 +1877,20 @@ function EssayPracticePanel({
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm font-black text-[#64748b]" htmlFor="essay-answer">我的作答</label>
+                <label className="text-sm font-black text-[#8a8474]" htmlFor="essay-answer">我的作答</label>
                 <textarea
                   id="essay-answer"
-                  className="min-h-72 resize-y rounded border border-[#cbd5e1] bg-white p-4 text-sm leading-7 outline-none focus:border-[#0e7490]"
+                  className="min-h-72 resize-y rounded border border-[#d4cab0] bg-[#fffdf8] p-4 text-sm leading-7 outline-none focus:border-[#1a5841]"
                   placeholder="在這裡輸入或貼上你的申論作答。"
                   value={currentRecord?.answer ?? ""}
                   onChange={(event) => onUpdateEssayRecord(currentQuestion, { answer: event.currentTarget.value })}
                 />
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e2e8f0] pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e3dcc9] pt-4">
                 <div className="flex flex-wrap gap-2">
                   <button
-                    className="rounded bg-[#0f172a] px-4 py-2 text-sm font-black text-white hover:bg-[#1e293b] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded bg-[#1a5841] px-4 py-2 text-sm font-black text-white hover:bg-[#134635] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isReviewingEssay || !(currentRecord?.answer ?? "").trim()}
                     onClick={reviewEssayAnswer}
                     type="button"
@@ -1898,7 +1898,7 @@ function EssayPracticePanel({
                     {isReviewingEssay ? "批閱中" : "AI 批閱"}
                   </button>
                   <button
-                    className="rounded border border-[#cbd5e1] px-4 py-2 text-sm font-black hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded border border-[#d4cab0] px-4 py-2 text-sm font-black hover:bg-[#faf6ec] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={safeIndex <= 0}
                     onClick={() => onEssayIndexChange(safeIndex - 1)}
                     type="button"
@@ -1906,7 +1906,7 @@ function EssayPracticePanel({
                     上一題
                   </button>
                   <button
-                    className="rounded border border-[#cbd5e1] px-4 py-2 text-sm font-black hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded border border-[#d4cab0] px-4 py-2 text-sm font-black hover:bg-[#faf6ec] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={safeIndex >= essayQuestions.length - 1}
                     onClick={() => onEssayIndexChange(safeIndex + 1)}
                     type="button"
@@ -1914,7 +1914,7 @@ function EssayPracticePanel({
                     下一題
                   </button>
                 </div>
-                <p className="text-xs font-bold text-[#64748b]">
+                <p className="text-xs font-bold text-[#8a8474]">
                   {essayQuestions.length > 0 ? `${safeIndex + 1} / ${essayQuestions.length}` : "0 / 0"}
                 </p>
               </div>
@@ -1930,37 +1930,37 @@ function EssayPracticePanel({
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-black text-[#0369a1]">AI 批閱結果</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#334155]">
+                      <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#4a453a]">
                         {formatReviewText(currentRecord.review.summary, "已完成批閱。")}
                       </p>
                     </div>
-                    <div className="rounded border border-[#7dd3fc] bg-white px-4 py-2 text-right">
-                      <p className="text-xs font-black text-[#64748b]">預估分數</p>
-                      <p className="text-2xl font-black text-[#0e7490]">{currentRecord.review.score} / {currentRecord.review.maxScore}</p>
+                    <div className="rounded border border-[#7dd3fc] bg-[#fffdf8] px-4 py-2 text-right">
+                      <p className="text-xs font-black text-[#8a8474]">預估分數</p>
+                      <p className="text-2xl font-black text-[#1a5841]">{currentRecord.review.score} / {currentRecord.review.maxScore}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
-                    <div className="rounded border border-[#dbeafe] bg-white p-3">
-                      <p className="text-xs font-black text-[#64748b]">架構評語</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#172033]">
+                    <div className="rounded border border-[#dbeafe] bg-[#fffdf8] p-3">
+                      <p className="text-xs font-black text-[#8a8474]">架構評語</p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#2c2a24]">
                         {formatReviewText(currentRecord.review.structureFeedback, "請加強作答架構與段落安排。")}
                       </p>
                     </div>
-                    <div className="rounded border border-[#dbeafe] bg-white p-3">
-                      <p className="text-xs font-black text-[#64748b]">內容評語</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#172033]">
+                    <div className="rounded border border-[#dbeafe] bg-[#fffdf8] p-3">
+                      <p className="text-xs font-black text-[#8a8474]">內容評語</p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#2c2a24]">
                         {formatReviewText(currentRecord.review.contentFeedback, "請補強題目核心概念與案例適用。")}
                       </p>
                     </div>
                   </div>
 
                   {formatReviewList(currentRecord.review.missingPoints).length > 0 ? (
-                    <div className="rounded border border-[#dbeafe] bg-white p-3">
-                      <p className="text-xs font-black text-[#64748b]">缺漏考點</p>
+                    <div className="rounded border border-[#dbeafe] bg-[#fffdf8] p-3">
+                      <p className="text-xs font-black text-[#8a8474]">缺漏考點</p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {formatReviewList(currentRecord.review.missingPoints).map((point) => (
-                          <span key={point} className="rounded border border-[#cbd5e1] bg-[#f8fafc] px-2 py-1 text-xs font-bold text-[#334155]">
+                          <span key={point} className="rounded border border-[#d4cab0] bg-[#faf6ec] px-2 py-1 text-xs font-bold text-[#4a453a]">
                             {point}
                           </span>
                         ))}
@@ -1968,23 +1968,23 @@ function EssayPracticePanel({
                     </div>
                   ) : null}
 
-                  <div className="rounded border border-[#dbeafe] bg-white p-3">
-                    <p className="text-xs font-black text-[#64748b]">加強建議</p>
+                  <div className="rounded border border-[#dbeafe] bg-[#fffdf8] p-3">
+                    <p className="text-xs font-black text-[#8a8474]">加強建議</p>
                     <ul className="mt-2 grid gap-1.5">
                       {formatReviewList(currentRecord.review.improvementSuggestions).map((suggestion, index) => (
-                        <li key={`${suggestion}-${index}`} className="text-sm font-bold leading-6 text-[#172033]">
+                        <li key={`${suggestion}-${index}`} className="text-sm font-bold leading-6 text-[#2c2a24]">
                           {index + 1}. {suggestion}
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="rounded border border-[#dbeafe] bg-white p-3">
-                    <p className="text-xs font-black text-[#64748b]">參考作答方向</p>
-                    <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#172033]">
+                  <div className="rounded border border-[#dbeafe] bg-[#fffdf8] p-3">
+                    <p className="text-xs font-black text-[#8a8474]">參考作答方向</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-[#2c2a24]">
                       {formatReviewText(currentRecord.review.referenceDirection, "建議依題目爭點分段回答，並補上具體結論。")}
                     </p>
-                    <p className="mt-2 text-[11px] font-bold text-[#94a3b8]">
+                    <p className="mt-2 text-[11px] font-bold text-[#a39c8a]">
                       批閱時間：{new Date(currentRecord.review.reviewedAt).toLocaleString("zh-TW")}
                       {currentRecord.review.source === "local" ? "｜本機規則輔助" : ""}
                     </p>
@@ -1993,8 +1993,8 @@ function EssayPracticePanel({
               ) : null}
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-8 text-center">
-              <p className="text-sm font-bold text-[#64748b]">目前沒有可練習的申論題。請換科目、年度或重新載入資料。</p>
+            <div className="rounded-lg border border-dashed border-[#d4cab0] bg-[#faf6ec] p-8 text-center">
+              <p className="text-sm font-bold text-[#8a8474]">目前沒有可練習的申論題。請換科目、年度或重新載入資料。</p>
             </div>
           )}
         </section>
@@ -2100,32 +2100,32 @@ function QuizPracticePanel({
   return (
     <section className="grid gap-5">
       <section className="grid grid-cols-3 gap-4 max-[920px]:grid-cols-1">
-        <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
           <p className="text-xl font-black">{selectedExam}</p>
           <p className="mt-2 text-3xl font-black">{category}</p>
         </div>
-        <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-          <p className="text-sm font-black text-[#64748b]">本次考卷題數</p>
-          <p className="mt-1 text-3xl font-black text-[#0e7490]">{formatNumber(quizQuestions.length)}</p>
-          <p className="mt-1 text-xs font-bold text-[#64748b]">目標 {practiceQuestionLimit} 題｜{sourceYearText || getYearRange(selectedYears)}</p>
+        <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+          <p className="text-sm font-black text-[#8a8474]">本次考卷題數</p>
+          <p className="mt-1 text-3xl font-black text-[#1a5841]">{formatNumber(quizQuestions.length)}</p>
+          <p className="mt-1 text-xs font-bold text-[#8a8474]">目標 {practiceQuestionLimit} 題｜{sourceYearText || getYearRange(selectedYears)}</p>
         </div>
-        <div className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-          <p className="text-sm font-black text-[#64748b]">練習紀錄</p>
-          <p className="mt-1 text-3xl font-black text-[#c2410c]">{formatNumber(answeredCount)}</p>
-          <p className="mt-1 text-xs font-bold text-[#64748b]">錯題 {wrongCount} 題｜重點題 {flaggedCount} 題</p>
+        <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+          <p className="text-sm font-black text-[#8a8474]">練習紀錄</p>
+          <p className="mt-1 text-3xl font-black text-[#a3471d]">{formatNumber(answeredCount)}</p>
+          <p className="mt-1 text-xs font-bold text-[#8a8474]">錯題 {wrongCount} 題｜重點題 {flaggedCount} 題</p>
         </div>
       </section>
 
       <section className="grid grid-cols-[340px_1fr] gap-5 max-[980px]:grid-cols-1">
-        <aside className="rounded-lg border border-[#dce3ef] bg-white p-4 shadow-sm">
-          <p className="text-sm font-black text-[#0e7490]">歷屆選擇題測驗</p>
+        <aside className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
+          <p className="text-sm font-black text-[#1a5841]">歷屆選擇題測驗</p>
           <h2 className="mt-1 text-xl font-black">課後測驗與錯題整理</h2>
 
           <div className="mt-4 grid gap-2">
-            <label className="text-xs font-black text-[#64748b]" htmlFor="quiz-subject">選擇科目</label>
+            <label className="text-xs font-black text-[#8a8474]" htmlFor="quiz-subject">選擇科目</label>
             <select
               id="quiz-subject"
-              className="h-10 rounded border border-[#cbd5e1] px-3 text-sm font-bold"
+              className="h-10 rounded border border-[#d4cab0] px-3 text-sm font-bold"
               value={quizSubject}
               onChange={(event) => onSubjectChange(event.currentTarget.value)}
             >
@@ -2136,7 +2136,7 @@ function QuizPracticePanel({
           </div>
 
           <div className="mt-4 grid gap-2">
-            <p className="text-xs font-black text-[#64748b]">選擇刷題方式</p>
+            <p className="text-xs font-black text-[#8a8474]">選擇刷題方式</p>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: "single" as const, label: "單一年度" },
@@ -2146,8 +2146,8 @@ function QuizPracticePanel({
                   key={mode.id}
                   className={`rounded border px-3 py-2 text-xs font-black ${
                     quizPaperMode === mode.id
-                      ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
-                      : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                      ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                      : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                   }`}
                   onClick={() => onPaperModeChange(mode.id)}
                   type="button"
@@ -2160,10 +2160,10 @@ function QuizPracticePanel({
 
           <div className="mt-4 grid gap-2">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-black text-[#64748b]">
+              <p className="text-xs font-black text-[#8a8474]">
                 {quizPaperMode === "single" ? "選擇考卷年度" : "選擇混合年度"}
               </p>
-              {quizPaperMode === "mixed" ? <span className="text-[11px] font-bold text-[#94a3b8]">最多 3 年</span> : null}
+              {quizPaperMode === "mixed" ? <span className="text-[11px] font-bold text-[#a39c8a]">最多 3 年</span> : null}
             </div>
             <div className="grid grid-cols-3 gap-2">
               {quizAvailableYears.map((year) => {
@@ -2175,8 +2175,8 @@ function QuizPracticePanel({
                     key={year}
                     className={`rounded border px-3 py-2 text-xs font-black ${
                       active
-                        ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
-                        : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                        ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                        : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                     } ${disabled ? "cursor-not-allowed opacity-45" : ""}`}
                     disabled={disabled}
                     onClick={() => onPaperYearToggle(year)}
@@ -2199,8 +2199,8 @@ function QuizPracticePanel({
                 key={filter.id}
                 className={`rounded border px-3 py-2 text-xs font-black ${
                   quizFilter === filter.id
-                    ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
-                    : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                    ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                    : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                 }`}
                 onClick={() => changeFilter(filter.id)}
                 type="button"
@@ -2208,49 +2208,49 @@ function QuizPracticePanel({
                 {filter.label}
               </button>
             ))}
-            <p className="col-span-2 text-[11px] font-bold leading-5 text-[#64748b]">
+            <p className="col-span-2 text-[11px] font-bold leading-5 text-[#8a8474]">
               重點題是你主動標記、想再回來複習的題目，不影響答題結果。
             </p>
           </div>
 
-          <div className="mt-4 rounded border border-[#e2e8f0] bg-[#f8fafc] p-3">
-            <p className="text-xs font-black text-[#64748b]">本次考卷</p>
-            <p className="mt-1 text-sm font-bold text-[#334155]">{modeTitle}</p>
-            <p className="mt-1 text-xs font-bold text-[#64748b]">
+          <div className="mt-4 rounded border border-[#e3dcc9] bg-[#faf6ec] p-3">
+            <p className="text-xs font-black text-[#8a8474]">本次考卷</p>
+            <p className="mt-1 text-sm font-bold text-[#4a453a]">{modeTitle}</p>
+            <p className="mt-1 text-xs font-bold text-[#8a8474]">
               {sourcePapers.length} 份來源試卷｜{quizQuestions.length} / {practiceQuestionLimit} 題
             </p>
-            <p className="mt-1 text-[11px] font-black text-[#0e7490]">只使用已取得官方答案的選擇題</p>
-            <p className="mt-1 text-xs font-bold text-[#94a3b8]">來源年度：{sourceYearText || "尚未載入"}</p>
+            <p className="mt-1 text-[11px] font-black text-[#1a5841]">只使用已取得官方答案的選擇題</p>
+            <p className="mt-1 text-xs font-bold text-[#a39c8a]">來源年度：{sourceYearText || "尚未載入"}</p>
             <div className="mt-2 grid gap-1.5">
               {sourcePapers.slice(0, 4).map((paper, paperIndex) => (
-                <p key={`summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e2e8f0] bg-white px-2 py-1 text-[11px] font-bold leading-5 text-[#475569]">
+                <p key={`summary-${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`} className="rounded border border-[#e3dcc9] bg-[#fffdf8] px-2 py-1 text-[11px] font-bold leading-5 text-[#6b6557]">
                   {paper.year} 年｜{selectedExam}｜{paper.category ?? category}｜{paper.subject}｜抽 {paper.questionCount} 題
                 </p>
               ))}
               {sourcePapers.length > 4 ? (
-                <p className="text-[11px] font-bold text-[#94a3b8]">另有 {sourcePapers.length - 4} 份來源，詳見下方來源依據。</p>
+                <p className="text-[11px] font-bold text-[#a39c8a]">另有 {sourcePapers.length - 4} 份來源，詳見下方來源依據。</p>
               ) : null}
             </div>
           </div>
 
-          <div className="mt-4 rounded border border-[#e2e8f0] bg-white p-3">
-            <p className="text-xs font-black text-[#64748b]">來源依據</p>
+          <div className="mt-4 rounded border border-[#e3dcc9] bg-[#fffdf8] p-3">
+            <p className="text-xs font-black text-[#8a8474]">來源依據</p>
             <div className="mt-2 grid max-h-36 gap-2 overflow-auto pr-1">
               {sourcePapers.length > 0 ? (
                 sourcePapers.map((paper, paperIndex) => (
                   <a
                     key={`${paper.year}-${paper.category ?? ""}-${paper.subject}-${paper.paperUrl}-${paperIndex}`}
-                    className="rounded border border-[#e2e8f0] bg-[#f8fafc] px-2 py-1.5 text-xs font-bold text-[#334155] hover:border-[#0e7490] hover:text-[#0e7490]"
+                    className="rounded border border-[#e3dcc9] bg-[#faf6ec] px-2 py-1.5 text-xs font-bold text-[#4a453a] hover:border-[#1a5841] hover:text-[#1a5841]"
                     href={paper.paperUrl}
                     target="_blank"
                     rel="noreferrer"
                   >
                     <span className="block leading-5">{paper.year} 年｜{selectedExam}｜{paper.category ?? category}</span>
-                    <span className="block leading-5 text-[#0f172a]">{paper.subject}｜抽 {paper.questionCount} 題</span>
+                    <span className="block leading-5 text-[#1a5841]">{paper.subject}｜抽 {paper.questionCount} 題</span>
                   </a>
                 ))
               ) : (
-                <p className="rounded border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-2 text-xs font-bold text-[#94a3b8]">
+                <p className="rounded border border-dashed border-[#d4cab0] bg-[#faf6ec] p-2 text-xs font-bold text-[#a39c8a]">
                   目前沒有可判分的答案來源。請改選其他年度、科目，或等待答案資料補齊。
                 </p>
               )}
@@ -2258,32 +2258,32 @@ function QuizPracticePanel({
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-black text-[#64748b]">弱點整理</p>
+            <p className="text-xs font-black text-[#8a8474]">弱點整理</p>
             {weaknessStats.length > 0 ? (
               <div className="mt-2 grid gap-2">
                 {weaknessStats.slice(0, 5).map(([topic, count]) => (
-                  <div key={topic} className="flex items-center justify-between rounded border border-[#e2e8f0] bg-white px-3 py-2 text-sm">
+                  <div key={topic} className="flex items-center justify-between rounded border border-[#e3dcc9] bg-[#fffdf8] px-3 py-2 text-sm">
                     <span className="font-bold">{topic}</span>
-                    <span className="font-black text-[#c2410c]">{count} 錯</span>
+                    <span className="font-black text-[#a3471d]">{count} 錯</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="mt-2 rounded border border-dashed border-[#cbd5e1] bg-white p-3 text-xs font-bold text-[#94a3b8]">
+              <p className="mt-2 rounded border border-dashed border-[#d4cab0] bg-[#fffdf8] p-3 text-xs font-bold text-[#a39c8a]">
                 作答並確認答案後，這裡會統計錯最多的考點。
               </p>
             )}
           </div>
         </aside>
 
-        <section className="rounded-lg border border-[#dce3ef] bg-white p-5 shadow-sm">
+        <section className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-5 shadow-sm">
           {currentQuestion ? (
             <div className="grid gap-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[#0e7490]">{currentQuestion.subject}｜{currentQuestion.year} 年｜{modeTitle}</p>
+                  <p className="text-sm font-black text-[#1a5841]">{currentQuestion.subject}｜{currentQuestion.year} 年｜{modeTitle}</p>
                   <h2 className="mt-1 text-2xl font-black">{currentQuestion.questionNo}</h2>
-                  <p className="mt-1 text-xs font-bold text-[#64748b]">
+                  <p className="mt-1 text-xs font-bold text-[#8a8474]">
                     來源：{currentSourceText}
                   </p>
                 </div>
@@ -2291,29 +2291,29 @@ function QuizPracticePanel({
                   <button
                     className={`rounded border px-3 py-2 text-xs font-black ${
                       currentRecord?.flagged
-                        ? "border-[#f97316] bg-[#fff7ed] text-[#c2410c]"
-                        : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                        ? "border-[#f97316] bg-[#fff7ed] text-[#a3471d]"
+                        : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                     }`}
                     onClick={() => onToggleFlag(currentQuestion)}
                     type="button"
                   >
                     {currentRecord?.flagged ? "已標記重點" : "標記重點"}
                   </button>
-                  <a className="rounded border border-[#cbd5e1] px-3 py-2 text-xs font-black hover:bg-[#f8fafc]" href={currentQuestion.paperUrl} target="_blank" rel="noreferrer">
+                  <a className="rounded border border-[#d4cab0] px-3 py-2 text-xs font-black hover:bg-[#faf6ec]" href={currentQuestion.paperUrl} target="_blank" rel="noreferrer">
                     開啟該試卷
                   </a>
                   {currentAnswerUrl ? (
-                    <a className="rounded border border-[#cbd5e1] px-3 py-2 text-xs font-black hover:bg-[#f8fafc]" href={currentAnswerUrl} target="_blank" rel="noreferrer">
+                    <a className="rounded border border-[#d4cab0] px-3 py-2 text-xs font-black hover:bg-[#faf6ec]" href={currentAnswerUrl} target="_blank" rel="noreferrer">
                       答案卷
                     </a>
                   ) : null}
                 </div>
               </div>
 
-              <div className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
-                <div className="grid gap-3 text-base font-bold leading-8 text-[#172033]">
+              <div className="rounded border border-[#e3dcc9] bg-[#faf6ec] p-4">
+                <div className="grid gap-3 text-base font-bold leading-8 text-[#2c2a24]">
                   {currentStemLines.map((line, index) => (
-                    <p key={`${currentQuestion.id}-stem-${index}`} className={index === 0 ? "text-lg" : "rounded border border-[#e2e8f0] bg-white px-3 py-2 text-sm leading-7"}>
+                    <p key={`${currentQuestion.id}-stem-${index}`} className={index === 0 ? "text-lg" : "rounded border border-[#e3dcc9] bg-[#fffdf8] px-3 py-2 text-sm leading-7"}>
                       {line}
                     </p>
                   ))}
@@ -2338,8 +2338,8 @@ function QuizPracticePanel({
                             : revealed && hasAnswer && selected && !isCorrect
                               ? "border-[#ef4444] bg-[#fee2e2] text-[#991b1b]"
                               : selected
-                                ? "border-[#0e7490] bg-[#ecfeff] text-[#0e7490]"
-                                : "border-[#cbd5e1] bg-white text-[#334155] hover:bg-[#f8fafc]"
+                                ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                                : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
                         }`}
                         onClick={() => onChooseAnswer(currentQuestion, option)}
                         type="button"
@@ -2350,10 +2350,10 @@ function QuizPracticePanel({
                   })}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e2e8f0] pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e3dcc9] pt-4">
                 <div className="flex flex-wrap gap-2">
                   <button
-                    className="rounded bg-[#0f172a] px-4 py-2 text-sm font-black text-white hover:bg-[#1e293b] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded bg-[#1a5841] px-4 py-2 text-sm font-black text-white hover:bg-[#134635] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!currentRecord?.selectedAnswer || !currentQuestion.correctAnswer}
                     onClick={() => onRevealAnswer(currentQuestion)}
                     type="button"
@@ -2361,7 +2361,7 @@ function QuizPracticePanel({
                     確認答案
                   </button>
                   <button
-                    className="rounded border border-[#cbd5e1] px-4 py-2 text-sm font-black hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded border border-[#d4cab0] px-4 py-2 text-sm font-black hover:bg-[#faf6ec] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={safeIndex <= 0}
                     onClick={() => onQuizIndexChange(safeIndex - 1)}
                     type="button"
@@ -2369,7 +2369,7 @@ function QuizPracticePanel({
                     上一題
                   </button>
                   <button
-                    className="rounded border border-[#cbd5e1] px-4 py-2 text-sm font-black hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded border border-[#d4cab0] px-4 py-2 text-sm font-black hover:bg-[#faf6ec] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={safeIndex >= filteredQuestions.length - 1}
                     onClick={() => onQuizIndexChange(safeIndex + 1)}
                     type="button"
@@ -2377,13 +2377,13 @@ function QuizPracticePanel({
                     下一題
                   </button>
                 </div>
-                <p className="text-xs font-bold text-[#64748b]">
+                <p className="text-xs font-bold text-[#8a8474]">
                   {filteredQuestions.length > 0 ? `${safeIndex + 1} / ${filteredQuestions.length}` : "0 / 0"}
                 </p>
               </div>
 
               {currentRecord?.revealed ? (
-                <div className="grid gap-3 rounded-lg border border-[#dce3ef] bg-[#f8fafc] p-4">
+                <div className="grid gap-3 rounded-lg border border-[#e0d8c4] bg-[#faf6ec] p-4">
                   {currentQuestion.correctAnswer ? (
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-black">正確答案：{currentQuestion.correctAnswer}</span>
@@ -2399,23 +2399,23 @@ function QuizPracticePanel({
                     </div>
                   )}
                   <div>
-                    <p className="text-xs font-black text-[#64748b]">考點</p>
-                    <p className="mt-1 text-sm font-bold text-[#172033]">{currentQuestion.topic}</p>
+                    <p className="text-xs font-black text-[#8a8474]">考點</p>
+                    <p className="mt-1 text-sm font-bold text-[#2c2a24]">{currentQuestion.topic}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-black text-[#64748b]">來源</p>
-                    <p className="mt-1 text-sm font-bold text-[#172033]">{currentSourceText}</p>
+                    <p className="text-xs font-black text-[#8a8474]">來源</p>
+                    <p className="mt-1 text-sm font-bold text-[#2c2a24]">{currentSourceText}</p>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-lg border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-4 text-sm font-bold text-[#64748b]">
+                <div className="rounded-lg border border-dashed border-[#d4cab0] bg-[#faf6ec] p-4 text-sm font-bold text-[#8a8474]">
                   答案已隱藏。請先選擇 A/B/C/D，再按「確認答案」。本模式只納入可取得官方答案的選擇題。
                 </div>
               )}
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-8 text-center">
-              <p className="text-sm font-bold text-[#64748b]">目前沒有可判分的選擇題。刷題模式只載入含官方答案的歷屆試題，請換科目、年度或重新載入資料。</p>
+            <div className="rounded-lg border border-dashed border-[#d4cab0] bg-[#faf6ec] p-8 text-center">
+              <p className="text-sm font-bold text-[#8a8474]">目前沒有可判分的選擇題。刷題模式只載入含官方答案的歷屆試題，請換科目、年度或重新載入資料。</p>
             </div>
           )}
         </section>
@@ -2478,7 +2478,7 @@ function TrendBadge({ trend }: { trend: HotspotTopic["trend"] }) {
   const map = {
     rising: { label: "↑ 上升", className: "border-[#16a34a] bg-[#dcfce7] text-[#166534]" },
     stable: { label: "→ 穩定", className: "border-[#ca8a04] bg-[#fef9c3] text-[#854d0e]" },
-    declining: { label: "↓ 下降", className: "border-[#94a3b8] bg-[#f1f5f9] text-[#475569]" },
+    declining: { label: "↓ 下降", className: "border-[#a39c8a] bg-[#efe9da] text-[#6b6557]" },
   };
   const { label, className } = map[trend] ?? map.stable;
 
@@ -2490,8 +2490,8 @@ function HotspotResults({ analysis }: { analysis: HotspotAnalysis }) {
 
   const priorityLabel = (index: number) => {
     if (index === 0) return { text: "出題最多", className: "bg-[#fef2f2] text-[#b91c1c] border-[#fca5a5]" };
-    if (index <= 2) return { text: "出題較多", className: "bg-[#fff7ed] text-[#c2410c] border-[#fdba74]" };
-    return { text: "偶爾出題", className: "bg-[#f8fafc] text-[#475569] border-[#cbd5e1]" };
+    if (index <= 2) return { text: "出題較多", className: "bg-[#fff7ed] text-[#a3471d] border-[#fdba74]" };
+    return { text: "偶爾出題", className: "bg-[#faf6ec] text-[#6b6557] border-[#d4cab0]" };
   };
 
   return (
@@ -2515,7 +2515,7 @@ function HotspotResults({ analysis }: { analysis: HotspotAnalysis }) {
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-black">命題熱點排行</p>
-          <p className="text-xs font-bold text-[#64748b]">
+          <p className="text-xs font-bold text-[#8a8474]">
             實際分析 {analysis.totalQuestions} 題
             {analysis.loadedQuestions && analysis.loadedQuestions !== analysis.totalQuestions ? `｜載入 ${analysis.loadedQuestions} 題` : ""}
           </p>
@@ -2531,30 +2531,30 @@ function HotspotResults({ analysis }: { analysis: HotspotAnalysis }) {
             const priority = priorityLabel(index);
 
             return (
-              <article key={hotspot.topicId} className="rounded-lg border border-[#e2e8f0] bg-white">
+              <article key={hotspot.topicId} className="rounded-lg border border-[#e3dcc9] bg-[#fffdf8]">
                 <button
-                  className="w-full px-4 py-3 text-left hover:bg-[#f8fafc]"
+                  className="w-full px-4 py-3 text-left hover:bg-[#faf6ec]"
                   onClick={() => setExpandedTopicId(isExpanded ? null : hotspot.topicId)}
                   type="button"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0f172a] text-xs font-black text-white shrink-0">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1a5841] text-xs font-black text-white shrink-0">
                       {index + 1}
                     </span>
                     <span className="font-black">{hotspot.topicName}</span>
                     <span className={`rounded border px-2 py-0.5 text-xs font-black ${priority.className}`}>{priority.text}</span>
                     <TrendBadge trend={hotspot.trend} />
-                    <span className="ml-auto text-sm font-black text-[#c2410c]">{hotspot.frequency} 次</span>
-                    <span className="text-xs font-bold text-[#94a3b8]">{isExpanded ? "▲" : "▼"}</span>
+                    <span className="ml-auto text-sm font-black text-[#a3471d]">{hotspot.frequency} 次</span>
+                    <span className="text-xs font-bold text-[#a39c8a]">{isExpanded ? "▲" : "▼"}</span>
                   </div>
 
                   {/* 必考細項 */}
                   {hotspot.subtopics.length > 0 ? (
                     <div className="mt-2">
-                      <span className="text-xs font-black text-[#64748b]">必複習：</span>
+                      <span className="text-xs font-black text-[#8a8474]">必複習：</span>
                       <span className="mt-1 flex flex-wrap gap-1 inline-flex">
                         {hotspot.subtopics.map((sub) => (
-                          <span key={sub} className="rounded border border-[#cbd5e1] bg-[#f1f5f9] px-2 py-0.5 text-xs font-bold text-[#334155]">
+                          <span key={sub} className="rounded border border-[#d4cab0] bg-[#efe9da] px-2 py-0.5 text-xs font-bold text-[#4a453a]">
                             {sub}
                           </span>
                         ))}
@@ -2562,20 +2562,20 @@ function HotspotResults({ analysis }: { analysis: HotspotAnalysis }) {
                     </div>
                   ) : null}
 
-                  <p className="mt-1.5 text-xs font-bold text-[#94a3b8]">
+                  <p className="mt-1.5 text-xs font-bold text-[#a39c8a]">
                     近 {hotspot.years.length} 年皆出現（{hotspot.years.join("、")} 年）
                   </p>
                 </button>
 
                 {isExpanded && hotspot.examQuestions.length > 0 ? (
-                  <div className="border-t border-[#e2e8f0] px-4 py-3">
-                    <p className="mb-2 text-xs font-black text-[#0e7490]">相關考題｜列出 {hotspot.examQuestions.length} 題代表題</p>
+                  <div className="border-t border-[#e3dcc9] px-4 py-3">
+                    <p className="mb-2 text-xs font-black text-[#1a5841]">相關考題｜列出 {hotspot.examQuestions.length} 題代表題</p>
                     <div className="grid gap-2">
                       {hotspot.examQuestions.map((q, qi) => (
-                        <div key={qi} className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-3">
-                          <p className="text-xs font-black text-[#64748b]">{q.year} 年｜{q.questionNo}</p>
-                          <p className="mt-1 text-sm leading-5 text-[#172033]">{q.stem}</p>
-                          <p className="mt-1 text-xs text-[#94a3b8]">{q.reasoning}</p>
+                        <div key={qi} className="rounded border border-[#e3dcc9] bg-[#faf6ec] p-3">
+                          <p className="text-xs font-black text-[#8a8474]">{q.year} 年｜{q.questionNo}</p>
+                          <p className="mt-1 text-sm leading-5 text-[#2c2a24]">{q.stem}</p>
+                          <p className="mt-1 text-xs text-[#a39c8a]">{q.reasoning}</p>
                         </div>
                       ))}
                     </div>
@@ -2588,12 +2588,12 @@ function HotspotResults({ analysis }: { analysis: HotspotAnalysis }) {
       </div>
 
       {/* 整體趨勢 - 學生參考用，放最下面 */}
-      <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4">
-        <p className="text-sm font-black text-[#0e7490]">整體趨勢分析</p>
-        <p className="mt-2 text-sm leading-6 text-[#334155]">{analysis.overallTrend}</p>
+      <div className="rounded-lg border border-[#e3dcc9] bg-[#faf6ec] p-4">
+        <p className="text-sm font-black text-[#1a5841]">整體趨勢分析</p>
+        <p className="mt-2 text-sm leading-6 text-[#4a453a]">{analysis.overallTrend}</p>
       </div>
 
-      <p className="text-right text-xs text-[#94a3b8]">
+      <p className="text-right text-xs text-[#a39c8a]">
         分析時間：{new Date(analysis.generatedAt).toLocaleString("zh-TW")}｜共分析 {analysis.totalQuestions} 題
       </p>
     </div>
@@ -2605,14 +2605,14 @@ function DataDrawer({ mode, papers, questions, onClose }: { mode: DrawerMode; pa
   const paperGroups = groupPapersByUrl(papers);
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0f172a]/40" role="dialog" aria-modal="true">
-      <div className="ml-auto flex h-full w-full max-w-4xl flex-col bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#dce3ef] px-5 py-4">
+    <div className="fixed inset-0 z-50 bg-[#1a5841]/40" role="dialog" aria-modal="true">
+      <div className="ml-auto flex h-full w-full max-w-4xl flex-col bg-[#fffdf8] shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#e0d8c4] px-5 py-4">
           <div>
-            <p className="text-sm font-black text-[#0e7490]">載入明細</p>
+            <p className="text-sm font-black text-[#1a5841]">載入明細</p>
             <h2 className="text-2xl font-black">{title}</h2>
           </div>
-          <button className="rounded border border-[#cbd5e1] px-3 py-2 text-sm font-black hover:bg-[#f8fafc]" onClick={onClose} type="button">
+          <button className="rounded border border-[#d4cab0] px-3 py-2 text-sm font-black hover:bg-[#faf6ec]" onClick={onClose} type="button">
             關閉
           </button>
         </div>
@@ -2625,43 +2625,43 @@ function DataDrawer({ mode, papers, questions, onClose }: { mode: DrawerMode; pa
                 const displaySubject = isMerged ? group.subjects.join("、") : group.subjects[0];
 
                 return (
-                  <article key={group.key} className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                  <article key={group.key} className="rounded border border-[#e3dcc9] bg-[#faf6ec] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-black text-[#0e7490]">
+                        <p className="text-sm font-black text-[#1a5841]">
                           {group.year} 年｜{group.exam}｜{group.category}
                         </p>
                         <h3 className="mt-1 text-lg font-black">{displaySubject}</h3>
                         {isMerged ? (
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {group.subjects.map((subject) => (
-                              <span key={subject} className="rounded border border-[#cbd5e1] bg-white px-2 py-0.5 text-xs font-bold text-[#334155]">
+                              <span key={subject} className="rounded border border-[#d4cab0] bg-[#fffdf8] px-2 py-0.5 text-xs font-bold text-[#4a453a]">
                                 {subject}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <p className="mt-1 text-sm font-bold text-[#64748b]">單科試卷</p>
+                          <p className="mt-1 text-sm font-bold text-[#8a8474]">單科試卷</p>
                         )}
                         {isMerged && (
-                          <p className="mt-1.5 text-xs font-bold text-[#94a3b8]">以上科目來自同一份合卷 PDF</p>
+                          <p className="mt-1.5 text-xs font-bold text-[#a39c8a]">以上科目來自同一份合卷 PDF</p>
                         )}
                       </div>
                       <div className="grid justify-items-end gap-3">
                         {group.paperParts ? (
                           <div className="grid justify-items-end gap-0.5">
                             {group.paperParts.map((part) => (
-                              <p key={part.label} className="text-sm font-black text-[#c2410c]">
+                              <p key={part.label} className="text-sm font-black text-[#a3471d]">
                                 {part.label}｜{part.count} 題
-                                <span className="ml-1 text-xs font-bold text-[#94a3b8]">（{part.questionType}）</span>
+                                <span className="ml-1 text-xs font-bold text-[#a39c8a]">（{part.questionType}）</span>
                               </p>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-xl font-black text-[#c2410c]">{group.questionCount} 題</p>
+                          <p className="text-xl font-black text-[#a3471d]">{group.questionCount} 題</p>
                         )}
                         <a
-                          className="rounded bg-[#172033] px-3 py-2 text-xs font-black text-white hover:bg-[#334155]"
+                          className="rounded bg-[#2c2a24] px-3 py-2 text-xs font-black text-white hover:bg-[#4a453a]"
                           href={group.paperUrl}
                           rel="noreferrer"
                           target="_blank"
@@ -2691,16 +2691,16 @@ function DataDrawer({ mode, papers, questions, onClose }: { mode: DrawerMode; pa
                 }
 
                 return Array.from(paperMap.entries()).map(([key, group]) => (
-                  <article key={key} className="rounded border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                  <article key={key} className="rounded border border-[#e3dcc9] bg-[#faf6ec] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-black text-[#0e7490]">
+                        <p className="text-sm font-black text-[#1a5841]">
                           {group.year} 年
                         </p>
                         <h3 className="mt-1 text-lg font-black">{group.subject}</h3>
                         <div className="mt-2 flex flex-wrap gap-1">
                           {group.questions.map((q) => (
-                            <span key={q.id} className="rounded border border-[#e2e8f0] bg-white px-2 py-0.5 text-xs font-bold text-[#334155]">
+                            <span key={q.id} className="rounded border border-[#e3dcc9] bg-[#fffdf8] px-2 py-0.5 text-xs font-bold text-[#4a453a]">
                               {q.questionNo}
                               {!isPlaceholder(q.stem) ? `：${q.stem.slice(0, 20)}…` : ""}
                             </span>
@@ -2708,9 +2708,9 @@ function DataDrawer({ mode, papers, questions, onClose }: { mode: DrawerMode; pa
                         </div>
                       </div>
                       <div className="grid justify-items-end gap-2">
-                        <p className="text-xl font-black text-[#c2410c]">{group.questions.length} 題</p>
+                        <p className="text-xl font-black text-[#a3471d]">{group.questions.length} 題</p>
                         <a
-                          className="rounded bg-[#172033] px-3 py-2 text-xs font-black text-white hover:bg-[#334155]"
+                          className="rounded bg-[#2c2a24] px-3 py-2 text-xs font-black text-white hover:bg-[#4a453a]"
                           href={group.url}
                           rel="noreferrer"
                           target="_blank"
