@@ -691,6 +691,7 @@ export default function HomePage() {
   const [category, setCategory] = useState("一般行政");
   const [selectedYears, setSelectedYears] = useState<string[]>(["114", "113", "112"]);
   const [analysisStarted, setAnalysisStarted] = useState(false);
+  const [showSetup, setShowSetup] = useState(true);
   const [isLoadingPapers, setIsLoadingPapers] = useState(false);
   const [loadProgress, setLoadProgress] = useState<LoadProgress | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -1264,6 +1265,7 @@ export default function HomePage() {
         detail: `已完成 ${(data.papers ?? []).length} 份資料、${(data.questions ?? []).length} 題。`,
       });
       setAnalysisStarted(true);
+      setShowSetup(false);
     } catch (error) {
       if (loadRequestIdRef.current !== requestId) {
         return;
@@ -1278,6 +1280,7 @@ export default function HomePage() {
       });
       setLoadError(error instanceof Error ? error.message : "TwinkleAI MCP 載入失敗");
       setAnalysisStarted(true);
+      setShowSetup(false);
     } finally {
       window.clearInterval(progressTimer);
       if (loadRequestIdRef.current === requestId) {
@@ -1286,44 +1289,80 @@ export default function HomePage() {
     }
   }
 
+  const navItems = [
+    { id: "hotspots" as const, icon: "◉", label: "熱點" },
+    { id: "quiz" as const, icon: "☰", label: "選擇題" },
+    { id: "essay" as const, icon: "✎", label: "申論" },
+  ];
+  const featureTitle =
+    activeFeature === "hotspots" ? "命題熱點分析" : activeFeature === "quiz" ? "選擇題測驗" : "申論題練習";
+
   return (
-    <main className="min-h-screen bg-[#f5f1e8] text-[#2c2a24]">
+    <main className="flex min-h-screen bg-[#f5f1e8] text-[#2c2a24]">
+      <nav className="sticky top-0 flex h-screen w-16 shrink-0 flex-col items-center gap-1.5 bg-[#1a3a2e] py-4 max-[760px]:hidden">
+        <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-md border border-[#c9a961] font-serif text-lg text-[#c9a961]">
+          考
+        </div>
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            className={`flex w-12 flex-col items-center gap-0.5 rounded-lg py-2 ${
+              activeFeature === item.id ? "bg-[#2a5240] text-[#e8dfc8]" : "text-[#7a9384] hover:text-[#b9cabe]"
+            }`}
+            onClick={() => changeFeature(item.id)}
+            type="button"
+          >
+            <span className="text-base leading-none">{item.icon}</span>
+            <span className="text-[11px] font-bold">{item.label}</span>
+          </button>
+        ))}
+        <div className="flex w-12 cursor-not-allowed flex-col items-center gap-0.5 rounded-lg py-2 text-[#48604f]" title="規劃中">
+          <span className="text-base leading-none">✗</span>
+          <span className="text-[11px] font-bold">錯題本</span>
+        </div>
+      </nav>
+
+      <div className="min-w-0 flex-1">
       <section className="border-b border-[#e0d8c4] bg-[#fffdf8]">
-        <div className="mx-auto max-w-7xl px-6 py-6">
-          <h1 className="text-3xl font-black tracking-normal max-[640px]:text-2xl">
-            {activeFeature === "hotspots" ? "近幾年命題熱點分析" : activeFeature === "quiz" ? "近年選擇題歷屆試題" : "近年申論題歷屆試題"}
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#8a8474]">
-            {activeFeature === "hotspots"
-              ? "先選擇考試類科與年份，系統會抓取共同科目與專業科目的歷屆試題，再用 AI 分析命題熱點；每個熱點都能追溯到來源試卷與題目。"
-              : activeFeature === "quiz"
-                ? "選擇考試、類科、科目與年份後進入刷題；答案預設隱藏，作答後才顯示，並自動留下錯題、重點標記與弱點紀錄。"
-                : "選擇考試、類科、科目與年份後練習歷屆申論題；題目下方提供空白作答區，可自行輸入或貼上答案並標記複習狀態。"}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {[
-              { id: "hotspots" as const, label: "命題熱點分析" },
-              { id: "quiz" as const, label: "歷屆選擇題測驗" },
-              { id: "essay" as const, label: "申論題歷屆試題測驗" },
-            ].map((tab) => (
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+          <h1 className="text-2xl font-black tracking-normal max-[640px]:text-xl">{featureTitle}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex gap-1 min-[761px]:hidden">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  className={`rounded border px-2.5 py-1 text-xs font-black ${
+                    activeFeature === item.id
+                      ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
+                      : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a]"
+                  }`}
+                  onClick={() => changeFeature(item.id)}
+                  type="button"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            {analysisStarted ? (
               <button
-                key={tab.id}
-                className={`rounded border px-4 py-2 text-sm font-black ${
-                  activeFeature === tab.id
-                    ? "border-[#1a5841] bg-[#e9f0e9] text-[#1a5841]"
-                    : "border-[#d4cab0] bg-[#fffdf8] text-[#4a453a] hover:bg-[#faf6ec]"
-                }`}
-                onClick={() => changeFeature(tab.id)}
+                className="flex items-center gap-2 rounded-full border border-[#d9d0ba] bg-[#fffdf8] px-4 py-1.5 text-xs font-bold text-[#4a453a] hover:border-[#1a5841]"
+                onClick={() => setShowSetup((current) => !current)}
                 type="button"
               >
-                {tab.label}
+                <span className="font-black">{selectedExam}</span>
+                <span className="text-[#a39c8a]">›</span>
+                <span className="font-black">{effectiveCategory}</span>
+                <span className="text-[#a39c8a]">›</span>
+                <span className="font-black">{getYearRange(selectedYears)}</span>
+                <span className="ml-1 text-[#1a5841]">{showSetup ? "收合" : "變更"}</span>
               </button>
-            ))}
+            ) : null}
           </div>
         </div>
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 py-6">
+        {showSetup || !analysisStarted ? (
         <section className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-5 shadow-sm">
           <div className="grid max-w-4xl gap-5">
             <div className="grid max-w-md gap-2">
@@ -1423,111 +1462,126 @@ export default function HomePage() {
             {loadError ? <p className="text-sm font-bold text-[#a3471d]">部分資料暫時無法完整載入，已先完成可用資料整理。</p> : null}
           </div>
         </section>
+        ) : null}
 
         {analysisStarted ? (
           activeFeature === "hotspots" ? (
             <>
-            <section className="grid grid-cols-3 gap-4 max-[920px]:grid-cols-1">
-              <div className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
-                <p className="text-xl font-black">{selectedExam}</p>
-                <p className="mt-2 text-3xl font-black">{effectiveCategory}</p>
+            <section className="grid grid-cols-3 gap-3 max-[920px]:grid-cols-1">
+              <button className="rounded-lg border border-[#e3dcc9] bg-[#fffdf8] px-4 py-3 text-left hover:border-[#a3471d]" onClick={() => setDrawerMode("papers")} type="button">
+                <p className="text-xs font-bold text-[#8a8474]">已載入試卷</p>
+                <p className="mt-0.5 text-2xl font-black text-[#a3471d]">{formatNumber(visiblePapers.length)}</p>
+              </button>
+              <button className="rounded-lg border border-[#e3dcc9] bg-[#fffdf8] px-4 py-3 text-left hover:border-[#1a5841]" onClick={() => setDrawerMode("questions")} type="button">
+                <p className="text-xs font-bold text-[#8a8474]">已載入題數</p>
+                <p className="mt-0.5 text-2xl font-black text-[#1a5841]">{formatNumber(visibleQuestions.length)}</p>
+              </button>
+              <div className="rounded-lg border border-[#e3dcc9] bg-[#fffdf8] px-4 py-3">
+                <p className="text-xs font-bold text-[#8a8474]">已分析科目</p>
+                <p className="mt-0.5 text-2xl font-black text-[#2c2a24]">
+                  {Object.keys(analysisResults).length} <span className="text-sm text-[#8a8474]">/ {subjectStats.length}</span>
+                </p>
               </div>
-              <button className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 text-left shadow-sm hover:border-[#f97316]" onClick={() => setDrawerMode("papers")} type="button">
-                <p className="text-sm font-black text-[#8a8474]">已載入試卷</p>
-                <p className="mt-1 text-3xl font-black text-[#a3471d]">{formatNumber(visiblePapers.length)}</p>
-                <p className="mt-1 text-xs font-bold text-[#8a8474]">{getYearRange(selectedYears)}</p>
-              </button>
-              <button className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 text-left shadow-sm hover:border-[#1a5841]" onClick={() => setDrawerMode("questions")} type="button">
-                <p className="text-sm font-black text-[#8a8474]">已載入題目</p>
-                <p className="mt-1 text-3xl font-black text-[#1a5841]">{formatNumber(visibleQuestions.length)}</p>
-                <p className="mt-1 text-xs font-bold text-[#8a8474]">共同科目 + 專業科目</p>
-              </button>
             </section>
 
             <section className="grid grid-cols-[330px_1fr] gap-6 max-[980px]:grid-cols-1">
-              <aside className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-4 shadow-sm">
-                <p className="text-sm font-black text-[#1a5841]">科目分析</p>
-                <h2 className="mt-1 text-xl font-black">選一科看熱點</h2>
-                <div className="mt-3 grid gap-2">
+              <aside>
+                <p className="mb-2 text-xs font-black tracking-widest text-[#8a8474]">科目</p>
+                <div className="grid gap-2">
                   {subjectStats.map((item) => {
                     const isAnalyzing = analyzingSubject === item.subject;
                     const hasResult = !!analysisResults[item.subject];
                     const hasError = !!analysisError[item.subject];
+                    const isActive = activeSubject?.subject === item.subject;
+                    const statusText = isAnalyzing
+                      ? `分析中 ${analyzingProgress}%`
+                      : hasResult
+                        ? "已分析"
+                        : "未分析";
 
                     return (
                       <div
                         key={item.subject}
-                        className={`rounded border ${activeSubject?.subject === item.subject ? "border-[#1a5841] bg-[#e9f0e9]" : "border-[#e3dcc9]"}`}
+                        className={`rounded-lg border px-3 py-2.5 ${
+                          isActive ? "border-[#1a5841] bg-[#1a5841] text-white" : "border-[#e3dcc9] bg-[#fffdf8]"
+                        }`}
                       >
                         <button
-                          className="w-full px-3 py-3 text-left hover:bg-[#f2f6f0]"
+                          className="w-full text-left"
                           onClick={() => setSubjectName(item.subject)}
                           type="button"
                         >
-                          <div className="flex items-center justify-between gap-3">
-                            <strong>{item.subject}</strong>
-                            <span className="text-sm font-black text-[#a3471d]">{item.questionCount} 題</span>
-                          </div>
-                          <p className="mt-1 text-xs font-bold text-[#8a8474]">
-                            {item.mergedSubjects.length > 1
-                              ? `${item.mergedPaperCount} 份合卷｜同一份試卷含 ${item.mergedSubjects.join("、")}`
-                              : `${item.paperCount} 份試卷｜${hasResult ? "已完成 AI 分析" : "等待 AI 分析"}`}
+                          <p className="text-[13px] font-black leading-5">{item.subject}</p>
+                          <p className={`mt-0.5 text-[11px] font-bold ${isActive ? "text-[#a8c5b5]" : "text-[#8a8474]"}`}>
+                            {item.questionCount} 題 · {statusText}
+                            {item.mergedSubjects.length > 1 ? " · 合卷" : ""}
                           </p>
                         </button>
-                        <div className="border-t border-[#e3dcc9] px-3 py-2">
-                          {hasError ? (
-                            <p className="text-xs font-bold text-[#a3471d]">{analysisError[item.subject]}</p>
-                          ) : null}
+                        {isAnalyzing ? (
+                          <div className={`mt-1.5 h-[3px] w-full overflow-hidden rounded-full ${isActive ? "bg-[#2a5240]" : "bg-[#efe9da]"}`}>
+                            <div
+                              className={`h-full rounded-full transition-[width] duration-300 ease-out ${isActive ? "bg-[#c9a961]" : "bg-[#1a5841]"}`}
+                              style={{ width: `${analyzingProgress}%` }}
+                            />
+                          </div>
+                        ) : (
                           <button
-                            className={`rounded px-3 py-1.5 text-xs font-black ${
-                              hasResult
-                                ? "border border-[#1a5841] bg-[#e9f0e9] text-[#1a5841] hover:bg-[#dbe7dc]"
-                                : "bg-[#1a5841] text-white hover:bg-[#134635]"
-                            } disabled:cursor-wait disabled:opacity-60`}
+                            className={`mt-1.5 rounded px-2 py-0.5 text-[11px] font-black disabled:cursor-wait disabled:opacity-50 ${
+                              isActive
+                                ? "border border-[#a8c5b5] text-[#e8dfc8] hover:bg-[#2a5240]"
+                                : "border border-[#1a5841] text-[#1a5841] hover:bg-[#e9f0e9]"
+                            }`}
                             disabled={!!analyzingSubject}
                             onClick={(e) => { e.stopPropagation(); void analyzeSubject(item.subject); }}
                             type="button"
                           >
-                            {isAnalyzing ? "分析中…" : hasResult ? "重新分析" : "分析"}
+                            {hasResult ? "重新分析" : "分析"}
                           </button>
-                          {isAnalyzing && (
-                            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e3dcc9]">
-                              <div
-                                className="h-full rounded-full bg-[#1a5841] transition-[width] duration-300 ease-out"
-                                style={{ width: `${analyzingProgress}%` }}
-                              />
-                            </div>
-                          )}
-                        </div>
+                        )}
+                        {hasError ? (
+                          <p className={`mt-1 text-[11px] font-bold ${isActive ? "text-[#f0c9a8]" : "text-[#a3471d]"}`}>{analysisError[item.subject]}</p>
+                        ) : null}
                       </div>
                     );
                   })}
                 </div>
               </aside>
 
-              <section className="rounded-lg border border-[#e0d8c4] bg-[#fffdf8] p-5 shadow-sm">
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-black text-[#1a5841]">
-                      {activeSubject?.subject}
-                      {activeSubject && activeSubject.mergedSubjects.length > 1
-                        ? `（法學知識與英文合卷）`
-                        : ""}
-                    </p>
-                    <h2 className="mt-1 text-3xl font-black">近幾年命題熱點</h2>
-                  </div>
-                  <div className="text-right max-[640px]:text-left">
-                    <p className="text-2xl font-black text-[#a3471d]">{activeSubject?.questionCount ?? 0}</p>
-                    <p className="text-xs font-bold text-[#8a8474]">題目來源</p>
-                  </div>
+              <section className="rounded-lg border border-[#e3dcc9] bg-[#fffdf8] p-5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 border-b-2 border-[#1a5841] pb-2.5">
+                  <h2 className="text-lg font-black">
+                    {activeSubject?.subject} 命題熱點排行
+                    {activeSubject && activeSubject.mergedSubjects.length > 1 ? "（合卷）" : ""}
+                  </h2>
+                  <span className="text-xs font-bold text-[#8a8474]">
+                    {getYearRange(selectedYears)} · {activeSubject?.questionCount ?? 0} 題
+                  </span>
                 </div>
 
                 {activeSubject && analysisResults[activeSubject.subject] ? (
-                  <HotspotResults analysis={analysisResults[activeSubject.subject]} />
+                  <>
+                    <HotspotResults analysis={analysisResults[activeSubject.subject]} />
+                    <div className="mt-4 flex flex-wrap gap-4 border-t border-dashed border-[#d9d0ba] pt-3">
+                      <button
+                        className="text-xs font-black text-[#1a5841] hover:underline"
+                        onClick={() => changeFeature("quiz")}
+                        type="button"
+                      >
+                        → 用這科練選擇題
+                      </button>
+                      <button
+                        className="text-xs font-black text-[#1a5841] hover:underline"
+                        onClick={() => changeFeature("essay")}
+                        type="button"
+                      >
+                        → 練申論題
+                      </button>
+                    </div>
+                  </>
                 ) : (
                   <div className="mt-6 rounded-lg border border-dashed border-[#d4cab0] bg-[#faf6ec] p-8 text-center">
                     <p className="text-sm font-bold text-[#8a8474]">
-                      點擊左側科目旁的「分析」按鈕，AI 將自動分析命題熱點
+                      點擊左側科目卡片裡的「分析」按鈕，AI 將自動分析命題熱點
                     </p>
                   </div>
                 )}
@@ -1590,6 +1644,7 @@ export default function HomePage() {
           onClose={() => setDrawerMode(null)}
         />
       ) : null}
+      </div>
     </main>
   );
 }
@@ -2525,57 +2580,57 @@ function HotspotResults({ analysis }: { analysis: HotspotAnalysis }) {
             {analysis.analysisCoverageNote}下方熱點僅依可解析題幹歸納。
           </div>
         ) : null}
-        <div className="grid gap-3">
+        <div>
           {analysis.hotspots.map((hotspot, index) => {
             const isExpanded = expandedTopicId === hotspot.topicId;
             const priority = priorityLabel(index);
+            const isLast = index === analysis.hotspots.length - 1;
 
             return (
-              <article key={hotspot.topicId} className="rounded-lg border border-[#e3dcc9] bg-[#fffdf8]">
+              <article key={hotspot.topicId} className={isLast ? "" : "border-b border-[#efe9da]"}>
                 <button
-                  className="w-full px-4 py-3 text-left hover:bg-[#faf6ec]"
+                  className="w-full py-3 text-left hover:bg-[#faf6ec]"
                   onClick={() => setExpandedTopicId(isExpanded ? null : hotspot.topicId)}
                   type="button"
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1a5841] text-xs font-black text-white shrink-0">
+                  <div className="flex gap-3">
+                    <span className="w-7 shrink-0 font-serif text-xl font-bold leading-6 text-[#1a5841]">
                       {index + 1}
                     </span>
-                    <span className="font-black">{hotspot.topicName}</span>
-                    <span className={`rounded border px-2 py-0.5 text-xs font-black ${priority.className}`}>{priority.text}</span>
-                    <TrendBadge trend={hotspot.trend} />
-                    <span className="ml-auto text-sm font-black text-[#a3471d]">{hotspot.frequency} 次</span>
-                    <span className="text-xs font-bold text-[#a39c8a]">{isExpanded ? "▲" : "▼"}</span>
-                  </div>
-
-                  {/* 必考細項 */}
-                  {hotspot.subtopics.length > 0 ? (
-                    <div className="mt-2">
-                      <span className="text-xs font-black text-[#8a8474]">必複習：</span>
-                      <span className="mt-1 flex flex-wrap gap-1 inline-flex">
-                        {hotspot.subtopics.map((sub) => (
-                          <span key={sub} className="rounded border border-[#d4cab0] bg-[#efe9da] px-2 py-0.5 text-xs font-bold text-[#4a453a]">
-                            {sub}
-                          </span>
-                        ))}
-                      </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-sm font-black leading-6">{hotspot.topicName}</span>
+                        <span className={`rounded border px-1.5 py-px text-[11px] font-black ${priority.className}`}>{priority.text}</span>
+                        <span className="ml-auto text-xs font-black text-[#a3471d]">
+                          {hotspot.frequency} 題 <TrendBadge trend={hotspot.trend} />
+                        </span>
+                        <span className="text-xs font-bold text-[#a39c8a]">{isExpanded ? "▲" : "▼"}</span>
+                      </div>
+                      {hotspot.subtopics.length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {hotspot.subtopics.map((sub) => (
+                            <span key={sub} className="rounded bg-[#e9f0e9] px-2 py-0.5 text-[11px] font-bold text-[#1a5841]">
+                              {sub}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                      <p className="mt-1 text-[11px] font-bold text-[#a39c8a]">
+                        出現於 {hotspot.years.join("、")} 年
+                      </p>
                     </div>
-                  ) : null}
-
-                  <p className="mt-1.5 text-xs font-bold text-[#a39c8a]">
-                    近 {hotspot.years.length} 年皆出現（{hotspot.years.join("、")} 年）
-                  </p>
+                  </div>
                 </button>
 
                 {isExpanded && hotspot.examQuestions.length > 0 ? (
-                  <div className="border-t border-[#e3dcc9] px-4 py-3">
-                    <p className="mb-2 text-xs font-black text-[#1a5841]">相關考題｜列出 {hotspot.examQuestions.length} 題代表題</p>
+                  <div className="mb-3 ml-10 rounded-lg border border-[#e3dcc9] bg-[#faf6ec] px-3 py-2.5">
+                    <p className="mb-2 text-xs font-black text-[#1a5841]">代表考題（{hotspot.examQuestions.length} 題）</p>
                     <div className="grid gap-2">
                       {hotspot.examQuestions.map((q, qi) => (
-                        <div key={qi} className="rounded border border-[#e3dcc9] bg-[#faf6ec] p-3">
-                          <p className="text-xs font-black text-[#8a8474]">{q.year} 年｜{q.questionNo}</p>
-                          <p className="mt-1 text-sm leading-5 text-[#2c2a24]">{q.stem}</p>
-                          <p className="mt-1 text-xs text-[#a39c8a]">{q.reasoning}</p>
+                        <div key={qi} className="border-l-2 border-[#d4cab0] pl-3">
+                          <p className="text-[11px] font-black text-[#8a8474]">{q.year} 年｜{q.questionNo}</p>
+                          <p className="mt-0.5 text-sm leading-5 text-[#2c2a24]">{q.stem}</p>
+                          <p className="mt-0.5 text-[11px] text-[#a39c8a]">{q.reasoning}</p>
                         </div>
                       ))}
                     </div>
