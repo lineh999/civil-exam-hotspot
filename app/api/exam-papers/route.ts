@@ -1541,10 +1541,13 @@ async function searchExamPaper(exam: string, category: string, subject: string, 
 async function fetchPaper(exam: string, category: string, subject: string, year: string) {
   let hit: SearchExamHit | null = null;
 
-  try {
-    hit = await searchExamPaper(exam, category, subject, year);
-  } catch {
-    hit = null;
+  // 沒有 Twinkle 憑證時直接走考選部官方 PDF，不再先打一輪一定失敗的搜尋。
+  if (process.env.TWINKLE_HUB_TOKEN) {
+    try {
+      hit = await searchExamPaper(exam, category, subject, year);
+    } catch {
+      hit = null;
+    }
   }
 
   if (!hit) {
@@ -1574,7 +1577,7 @@ async function fetchPaper(exam: string, category: string, subject: string, year:
       paperUrl,
       questionNo: `第 ${index + 1} 題`,
       questionType: "待補",
-      stem: "TwinkleAI MCP 尚未命中這一科的精準 PDF，已保留考科列並連到考選部該年度試題查詢頁。",
+      stem: "考選部試卷 PDF 暫時無法解析這一題，請點開試卷，或到考選部試題查詢頁查看原卷。",
       options: null,
     }));
 

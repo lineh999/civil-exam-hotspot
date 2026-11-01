@@ -1250,7 +1250,7 @@ export default function HomePage() {
       };
 
       if (!response.ok || data.error) {
-        throw new Error(data.error ?? "TwinkleAI MCP 載入失敗");
+        throw new Error(data.error ?? "題庫載入失敗");
       }
 
       if (loadRequestIdRef.current !== requestId) {
@@ -1278,7 +1278,7 @@ export default function HomePage() {
         label: activeFeature === "hotspots" ? "分析完成" : "載入完成",
         detail: activeFeature === "hotspots" ? "已完成資料整理，請選擇科目查看命題熱點。" : activeFeature === "quiz" ? "已完成資料整理，請選擇科目開始刷題。" : "已完成資料整理，請選擇科目練習申論題。",
       });
-      setLoadError(error instanceof Error ? error.message : "TwinkleAI MCP 載入失敗");
+      setLoadError(error instanceof Error ? error.message : "題庫載入失敗");
       setAnalysisStarted(true);
       setShowSetup(false);
     } finally {
